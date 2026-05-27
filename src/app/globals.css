@@ -1,26 +1,378 @@
 @import "tailwindcss";
 
+/*
+ * "Iyane keepsake" — an engraved-invitation system.
+ * Paper #F6EFE2 · Ink navy #0E2240 · Antique gold #C9A24B
+ * Cormorant Garamond (+ SC) · Italianno (script).
+ * The :root values below are fallbacks; the active theme overrides them at
+ * runtime (themeToCssVars), so the whole site re-skins per year.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --c-bg: #f6efe2; /* paper */
+  --c-surface: #efe6d3; /* warm card paper */
+  --c-paper-deep: #e6dabf; /* deepest paper — photo tile backing */
+  --c-primary: #0e2240; /* ink navy */
+  --c-primary-deep: #091627; /* projector navy */
+  --c-projector-deep: #060f1b; /* projector vignette edge */
+  --c-accent: #c9a24b; /* gold */
+  --c-accent-bright: #e0c788; /* soft gold */
+  --c-gold-deep: #a8862f; /* deep gold */
+  --c-ink: #0e2240; /* ink detail */
+  --c-ink-soft: #2a3a57; /* secondary ink */
+  --c-on-dark: #f6efe2; /* text on navy */
+  --c-on-surface: #0e2240; /* body text on paper */
+  --c-muted: #6b7691; /* tertiary ink */
+
+  /* Hairline rules, derived from the (themeable) ink + gold. */
+  --c-rule: color-mix(in srgb, var(--c-primary) 12%, transparent);
+  --c-gold-rule: color-mix(in srgb, var(--c-accent) 55%, transparent);
+  --c-gold-rule-faint: color-mix(in srgb, var(--c-accent) 28%, transparent);
+
+  /* Font stacks composed from the next/font variables on <html>. Defined here
+   * (always emitted) so both plain CSS below and the Tailwind font utilities
+   * resolve to the same families. */
+  --font-serif: var(--font-cormorant), "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  --font-serif-sc: var(--font-cormorant-sc), "Cormorant SC", var(--font-cormorant), serif;
+  --font-cursive: var(--font-italianno), "Pinyon Script", cursive;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-paper-deep: var(--c-paper-deep);
+  --color-primary: var(--c-primary);
+  --color-primary-deep: var(--c-primary-deep);
+  --color-projector-deep: var(--c-projector-deep);
+  --color-accent: var(--c-accent);
+  --color-accent-bright: var(--c-accent-bright);
+  --color-gold-deep: var(--c-gold-deep);
+  --color-ink: var(--c-ink);
+  --color-ink-soft: var(--c-ink-soft);
+  --color-on-dark: var(--c-on-dark);
+  --color-on-surface: var(--c-on-surface);
+  --color-muted: var(--c-muted);
+
+  --font-display: var(--font-serif);
+  --font-body: var(--font-serif);
+  --font-sc: var(--font-serif-sc);
+  --font-script: var(--font-cursive);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+  background-color: var(--c-bg);
+  color: var(--c-on-surface);
+  font-family: var(--font-serif);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Subtle paper grain. */
+  background-image:
+    radial-gradient(rgba(120, 90, 40, 0.025) 1px, transparent 1px),
+    radial-gradient(rgba(120, 90, 40, 0.02) 1px, transparent 1px);
+  background-size: 3px 3px, 7px 7px;
+  background-position: 0 0, 1px 2px;
+}
+
+::selection {
+  background: var(--c-accent);
+  color: var(--c-primary-deep);
+}
+
+/* ============================================================
+ * Animations relied on by the (untouched) home slider and the
+ * shared PhotoStage / PhotoControls — DO NOT remove.
+ * ============================================================ */
+.photo-kb-bg {
+  will-change: transform;
+  animation: photoDrift 16s ease-out both;
+}
+@keyframes photoDrift {
+  from { transform: scale(1.12); }
+  to { transform: scale(1.22); }
+}
+.photo-fade {
+  animation: photoFade 0.7s ease both;
+}
+@keyframes photoFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.progress-fill {
+  transform-origin: left center;
+  animation-name: progressGrow;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+@keyframes progressGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.gallery-album img {
+  animation: photoIn 0.7s ease both;
+}
+@keyframes photoIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ============ Keepsake type ============ */
+.eyebrow {
+  font-family: var(--font-serif-sc);
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: var(--c-gold-deep);
+}
+.eyebrow-ink { color: var(--c-ink); }
+.eyebrow-mute { color: var(--c-muted); }
+
+.script {
+  font-family: var(--font-cursive);
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1;
+}
+
+.h-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.005em;
+  line-height: 1.05;
+}
+
+/* Tracked deco capitals (kept for back-compat). */
+.caps {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+}
+/* Faint engraved lift for headings on paper. */
+.text-engrave {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* ============ Thin gold rules ============ */
+.rule-gold {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--c-gold-rule) 12%, var(--c-gold-rule) 88%, transparent);
+  margin: 0;
+}
+.rule-gold-solid {
+  background: var(--c-gold-rule);
+}
+.rule-ink {
+  height: 1px;
+  background: var(--c-rule);
+}
+
+/* ============ Paper card (engraved, flat — not a soft shadow) ============ */
+.deco-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-gold-rule-faint);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* ============ Underline-style keepsake field ============ */
+.field-input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--c-ink);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 19px;
+  color: var(--c-ink);
+  padding: 6px 0 8px;
+  outline: none;
+  transition: border-color 180ms ease;
+}
+.field-input::placeholder {
+  color: var(--c-muted);
+  font-style: italic;
+}
+.field-input:focus { border-bottom-color: var(--c-accent); }
+.field-textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 64px;
+  line-height: 1.45;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--c-ink);
+  border: 1px solid var(--c-rule);
+  padding: 10px 12px;
+  background: var(--c-bg);
+  outline: none;
+  transition: border-color 180ms ease;
+}
+.field-textarea::placeholder { color: var(--c-muted); }
+.field-textarea:focus { border-color: var(--c-accent); }
+.field-label {
+  display: block;
+  font-family: var(--font-serif-sc);
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 11px;
+  color: var(--c-ink);
+  margin-bottom: 8px;
+}
+
+/* ============ Live pulse dot ============ */
+.pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-accent) 70%, transparent);
+  animation: iy-pulse 1.8s ease-out infinite;
+}
+@keyframes iy-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-accent) 55%, transparent); }
+  70% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--c-accent) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-accent) 0%, transparent); }
+}
+
+/* ============ Overlapping contributor avatars ============ */
+.iy-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif-sc);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--c-on-dark);
+  border: 1.5px solid var(--c-accent);
+  box-shadow: 0 0 0 2px var(--c-bg);
+  margin-left: -10px;
+  text-transform: uppercase;
+}
+.iy-avatar:first-child { margin-left: 0; }
+.iy-avatar-more {
+  background: var(--c-bg);
+  color: var(--c-ink);
+}
+
+/* ============ Masonry tile dressing (overlaid in the gallery) ============ */
+.iy-tile {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: var(--c-paper-deep);
+  cursor: zoom-in;
+}
+.iy-tile img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 600ms cubic-bezier(0.2, 0.6, 0.2, 1), filter 400ms;
+  filter: saturate(0.92) contrast(1.02);
+}
+.iy-tile:hover img {
+  transform: scale(1.025);
+  filter: saturate(1) contrast(1.02);
+}
+.iy-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif-sc);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--c-on-dark);
+  background: color-mix(in srgb, var(--c-primary) 62%, transparent);
+  border: 1px solid var(--c-accent);
+  text-transform: uppercase;
+  backdrop-filter: blur(2px);
+}
+.iy-attr {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 28px 14px 12px;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--c-primary) 78%, transparent) 0%,
+    color-mix(in srgb, var(--c-primary) 28%, transparent) 60%,
+    transparent 100%
+  );
+  font-family: var(--font-serif-sc);
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: 10.5px;
+  color: var(--c-accent-bright);
+}
+.iy-attr .dash {
+  color: var(--c-accent);
+  margin-right: 8px;
+}
+.iy-tile.is-fresh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--c-accent);
+  pointer-events: none;
+  z-index: 2;
+  animation: iy-fresh 2.4s ease-out 1;
+}
+@keyframes iy-fresh {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* react-photo-album masonry, dressed as the keepsake wall: hairline gold
+ * gutters (gold backing shows through the 1px gaps) + a slow hover zoom. */
+.iy-album {
+  background: var(--c-gold-rule-faint);
+  padding: 1px;
+}
+.iy-album button {
+  position: relative;
+  overflow: hidden;
+  cursor: zoom-in;
+  background: var(--c-paper-deep);
+}
+.iy-album img {
+  display: block;
+  filter: saturate(0.92) contrast(1.02);
+  transition: transform 600ms cubic-bezier(0.2, 0.6, 0.2, 1), filter 400ms;
+}
+.iy-album button:hover img {
+  transform: scale(1.04);
+  filter: saturate(1) contrast(1.02);
+}
+
+/* ============ Add-photos drop zone (dashed gold double frame) ============ */
+.iy-drop-frame {
+  border: 1px dashed var(--c-accent);
+  margin: 10px;
+  padding: 48px 24px;
+  position: relative;
+}
+.iy-drop-frame::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--c-gold-rule-faint);
+  pointer-events: none;
 }
