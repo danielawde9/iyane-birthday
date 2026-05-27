@@ -8,7 +8,6 @@
 
 alter table events    enable row level security;
 alter table photos    enable row level security;
-alter table rsvps     enable row level security;
 alter table guestbook enable row level security;
 
 -- Public may read event details and only visible photos / guestbook entries.
@@ -16,5 +15,5 @@ create policy "anon read events"            on events    for select to anon usin
 create policy "anon read visible photos"    on photos    for select to anon using (status = 'visible');
 create policy "anon read visible guestbook" on guestbook for select to anon using (status = 'visible');
 
--- No anon writes anywhere, and the RSVP guest list is not anon-readable.
--- (The service role bypasses RLS, so the server can still do everything.)
+-- No anon writes anywhere. (The service role + direct Postgres connection both
+-- bypass RLS, so the server can still do everything.)
