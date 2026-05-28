@@ -6,7 +6,7 @@ const footLink = "font-sc text-[10px] uppercase tracking-[0.28em] text-on-dark/7
 export function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-[color:var(--c-gold-rule-faint)] bg-primary text-on-dark">
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-14 text-center">
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 pt-14 pb-24 text-center sm:pb-14">
         <Crest className="h-12 w-12" />
         <p className="script text-5xl leading-none text-accent">Iyane</p>
         <hr className="rule-gold w-40" />

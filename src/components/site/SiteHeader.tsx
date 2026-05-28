@@ -15,10 +15,10 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-4 sm:gap-7">
-          <Link href="/gallery" className={navLink}>Gallery</Link>
-          <Link href="/guestbook" className={navLink}>Guestbook</Link>
+          <Link href="/gallery" className={`hidden sm:inline-block ${navLink}`}>Gallery</Link>
+          <Link href="/guestbook" className={`hidden sm:inline-block ${navLink}`}>Guestbook</Link>
           <Link href="/details" className={`hidden sm:inline-block ${navLink}`}>Details</Link>
-          <ButtonLink href="/upload" variant="gold" className="px-4 py-2.5 sm:px-5">
+          <ButtonLink href="/upload" variant="gold" className="whitespace-nowrap px-3 py-2 text-[10px] sm:px-5 sm:py-3 sm:text-[11.5px]">
             Add Photos
           </ButtonLink>
         </nav>
