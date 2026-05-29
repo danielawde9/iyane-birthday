@@ -26,7 +26,7 @@ const spaceMono = Space_Mono({
   display: "swap",
 });
 
-// Sweet Sophomore (Year 2 / bright carnival) fonts.
+// Tiny Astronaut (Year 2 / playful space mission) fonts.
 const bagel = Bagel_Fat_One({
   subsets: ["latin"],
   weight: "400",

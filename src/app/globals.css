@@ -177,6 +177,35 @@ body {
   text-shadow: 1px 1px 0 var(--c-accent);
 }
 
+/* Text-only brand mark used by the shared header and footer. */
+.iyane-wordmark {
+  gap: 0.38em;
+  color: currentColor;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+.iyane-wordmark__initial {
+  display: inline-grid;
+  width: 1.18em;
+  height: 1.18em;
+  place-items: center;
+  background: var(--c-accent);
+  border: 2px solid var(--c-on-dark);
+  color: var(--c-ink);
+  letter-spacing: 0;
+  line-height: 1;
+  box-shadow: 3px 3px 0 var(--c-ink);
+  transform: rotate(-3deg);
+}
+.iyane-wordmark__name {
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.16em;
+  text-shadow: 1px 1px 0 var(--c-accent);
+}
+
 /* ============ Bunting + rules ============ */
 /* `.rule-gold` is an ink line with a small star punched into the middle. */
 .rule-gold {
@@ -258,7 +287,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-family: var(--font-arimo-stack);
+  font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -643,7 +672,7 @@ body {
  * properties. Each [data-theme="X"] selector below sets the FULL set of
  * variant variables. The rules under "Variant-driven components" lower down
  * read these vars — so a nested wrapper that sets data-theme="big-top" inside
- * an html with data-theme="sweet-sophomore" cleanly resets every visual
+ * an html with data-theme="tiny-astronaut" cleanly resets every visual
  * decision, not just colors.
  *
  * Adding a new year's theme = pick a slug, set its palette + copy in a theme
@@ -660,6 +689,15 @@ body {
   --v-card-border: 4px;
   --v-card-inset-stroke: inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink);
   --v-card-shadow: none;
+  --v-header-radius: 0px;
+  --v-header-shadow: none;
+  --v-header-border-bottom: 0;
+  --v-header-scallops-display: block;
+  --v-header-scallop-fill: var(--c-accent);
+  --v-header-scallop-stroke: var(--c-ink);
+  --v-nav-active-rule-height: 2px;
+  --v-nav-active-rule-bottom: -6px;
+  --v-nav-active-rule-radius: 0px;
   --v-btn-mask:
     radial-gradient(circle 8px at 0 50%, transparent 98%, #000 100%),
     radial-gradient(circle 8px at 100% 50%, transparent 98%, #000 100%),
@@ -701,6 +739,15 @@ body {
   --v-card-border: 4px;
   --v-card-inset-stroke: inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink);
   --v-card-shadow: none;
+  --v-header-radius: 0px;
+  --v-header-shadow: none;
+  --v-header-border-bottom: 0;
+  --v-header-scallops-display: block;
+  --v-header-scallop-fill: var(--c-accent);
+  --v-header-scallop-stroke: var(--c-ink);
+  --v-nav-active-rule-height: 2px;
+  --v-nav-active-rule-bottom: -6px;
+  --v-nav-active-rule-radius: 0px;
   --v-btn-mask:
     radial-gradient(circle 8px at 0 50%, transparent 98%, #000 100%),
     radial-gradient(circle 8px at 100% 50%, transparent 98%, #000 100%),
@@ -731,7 +778,8 @@ body {
   --v-paper-grain-position: 0 0, 1px 2px;
 }
 
-/* Sweet Sophomore — bright carnival. */
+/* Tiny Astronaut — playful space mission. */
+[data-theme="tiny-astronaut"],
 [data-theme="sweet-sophomore"] {
   --v-radius-sm: 12px;
   --v-radius-md: 14px;
@@ -739,12 +787,21 @@ body {
   --v-tile-border: 4px;
   --v-card-border: 2px;
   --v-card-inset-stroke: none;
-  --v-card-shadow: 0 4px 0 var(--c-primary-deep);
+  --v-card-shadow: 0 5px 0 color-mix(in srgb, var(--c-primary) 70%, transparent);
+  --v-header-radius: 0 0 28px 28px;
+  --v-header-shadow: 0 5px 0 color-mix(in srgb, var(--c-accent) 85%, transparent);
+  --v-header-border-bottom: 3px solid var(--c-accent);
+  --v-header-scallops-display: none;
+  --v-header-scallop-fill: var(--c-accent);
+  --v-header-scallop-stroke: transparent;
+  --v-nav-active-rule-height: 5px;
+  --v-nav-active-rule-bottom: -9px;
+  --v-nav-active-rule-radius: 9999px;
   --v-btn-mask: none;
   --v-btn-mask-composite: source-over;
   --v-btn-border-width: 0;
-  --v-btn-shadow: 0 4px 0 var(--c-primary-deep);
-  --v-btn-shadow-hover: 0 6px 0 var(--c-primary-deep);
+  --v-btn-shadow: 0 4px 0 var(--c-accent);
+  --v-btn-shadow-hover: 0 6px 0 var(--c-accent);
   --v-btn-padding: 14px 28px;
   --v-btn-letter-spacing: 0.06em;
   --v-input-bg: var(--c-surface);
@@ -761,15 +818,12 @@ body {
   --v-body-weight: 500;
   --v-pulse-bg: var(--c-joy);
   --v-album-bg: transparent;
-  --v-paper-grain: repeating-linear-gradient(
-    135deg,
-    transparent 0,
-    transparent 22px,
-    color-mix(in srgb, var(--c-primary) 5%, transparent) 22px,
-    color-mix(in srgb, var(--c-primary) 5%, transparent) 44px
-  );
-  --v-paper-grain-size: auto;
-  --v-paper-grain-position: 0 0;
+  --v-paper-grain:
+    radial-gradient(circle at 18px 18px, color-mix(in srgb, var(--c-accent) 36%, transparent) 0 2px, transparent 3px),
+    radial-gradient(circle at 74px 46px, color-mix(in srgb, var(--c-joy) 30%, transparent) 0 1.5px, transparent 2.5px),
+    linear-gradient(135deg, color-mix(in srgb, var(--c-primary) 7%, transparent), transparent 48%);
+  --v-paper-grain-size: 96px 96px, 128px 128px, auto;
+  --v-paper-grain-position: 0 0, 12px 8px, 0 0;
 }
 
 /* ----- Variant-driven components — read the --v-* properties so they re-skin
@@ -780,6 +834,37 @@ body {
   background-size: var(--v-paper-grain-size);
   background-position: var(--v-paper-grain-position);
   font-weight: var(--v-body-weight);
+}
+
+.theme-canvas {
+  background-color: var(--c-bg);
+  background-image: var(--v-paper-grain);
+  background-size: var(--v-paper-grain-size);
+  background-position: var(--v-paper-grain-position);
+  color: var(--c-on-surface);
+  font-family: var(--font-body);
+  font-weight: var(--v-body-weight);
+}
+
+.site-marquee {
+  border-radius: var(--v-header-radius);
+  border-bottom: var(--v-header-border-bottom);
+  box-shadow: var(--v-header-shadow);
+}
+
+.site-scallops {
+  display: var(--v-header-scallops-display);
+}
+
+.site-scallops path {
+  fill: var(--v-header-scallop-fill);
+  stroke: var(--v-header-scallop-stroke);
+}
+
+.nav-active::after {
+  bottom: var(--v-nav-active-rule-bottom);
+  height: var(--v-nav-active-rule-height);
+  border-radius: var(--v-nav-active-rule-radius);
 }
 
 .h-title {

@@ -22,6 +22,7 @@ export function useRotation(count: number, opts: { intervalMs?: number; keyboard
 
   // Keep the index valid as the list size changes.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- clamps state after the photo count changes.
     setIndex((i) => (count > 0 ? i % count : 0));
   }, [count]);
 

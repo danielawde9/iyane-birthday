@@ -14,6 +14,7 @@ export function PhotoStage({ photo }: { photo: PhotoDTO | null }) {
 
   useEffect(() => {
     if (!photo) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- needed to add the incoming photo as a crossfade layer.
     setLayers((prev) => {
       if (prev[prev.length - 1]?.id === photo.id) return prev;
       return [...prev.slice(-1), photo];

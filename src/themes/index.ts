@@ -1,12 +1,12 @@
 import type { Theme, ThemePalette } from "./types";
 import { mrOnederful } from "./mr-onederful";
 import { bigTop } from "./big-top";
-import { sweetSophomore } from "./sweet-sophomore";
+import { tinyAstronaut } from "./tiny-astronaut";
 
 /** Registry of every year's theme, keyed by slug. */
 export const themes: Record<string, Theme> = {
   [bigTop.slug]: bigTop,
-  [sweetSophomore.slug]: sweetSophomore,
+  [tinyAstronaut.slug]: tinyAstronaut,
   [mrOnederful.slug]: mrOnederful,
 };
 
@@ -19,11 +19,12 @@ export const DEFAULT_THEME_SLUG = bigTop.slug;
  * (the pre-rebrand letterpress theme). The rebrand to The Grand Jubilee kept
  * the slug aliased so existing DB rows keep working without a migration. New
  * installs and future years should pick a real registered slug (e.g. "big-top",
- * or a brand-new theme slug like "carnival" for Year 2). When you add a new
+ * or a brand-new theme slug like "tiny-astronaut" for Year 2). When you add a new
  * year's theme, register a fresh slug — don't reuse "mr-onederful".
  */
 export function getTheme(slug: string | null | undefined): Theme {
   if (slug === "mr-onederful") return themes[bigTop.slug] ?? themes[DEFAULT_THEME_SLUG];
+  if (slug === "sweet-sophomore") return themes[tinyAstronaut.slug] ?? themes[DEFAULT_THEME_SLUG];
   if (slug && themes[slug]) return themes[slug];
   return themes[DEFAULT_THEME_SLUG];
 }

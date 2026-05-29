@@ -2,7 +2,7 @@ import "./load-env";
 import { eq } from "drizzle-orm";
 import { getDb } from "./index";
 import { events, photos } from "./schema";
-import { DEMO_PHOTOS } from "./demo";
+import { DEMO_EVENT, DEMO_PHOTOS } from "./demo";
 
 /**
  * Replace the active event's photos with the bundled stand-in photo set (served
@@ -22,8 +22,9 @@ async function main() {
     process.exit(1);
   }
 
+  const demoPhotos = DEMO_PHOTOS.filter((p) => p.eventId === DEMO_EVENT.id);
   await db.delete(photos).where(eq(photos.eventId, event.id));
-  for (const p of DEMO_PHOTOS) {
+  for (const p of demoPhotos) {
     await db.insert(photos).values({
       eventId: event.id,
       storageKey: p.storageKey,
@@ -36,8 +37,8 @@ async function main() {
       status: "visible",
     });
   }
-  const guests = new Set(DEMO_PHOTOS.map((p) => p.uploaderName)).size;
-  console.log(`✓ Seeded ${DEMO_PHOTOS.length} sample photos across ${guests} guests.`);
+  const guests = new Set(demoPhotos.map((p) => p.uploaderName)).size;
+  console.log(`✓ Seeded ${demoPhotos.length} sample photos across ${guests} guests.`);
   process.exit(0);
 }
 

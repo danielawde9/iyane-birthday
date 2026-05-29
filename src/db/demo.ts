@@ -23,6 +23,36 @@ export const DEMO_EVENT: EventRow = {
   createdAt: new Date(),
 };
 
+export const LOCAL_TEST_EVENT_TWO: EventRow = {
+  id: "demo-event-0002-0002-000000000002",
+  year: 2,
+  themeSlug: "tiny-astronaut",
+  title: "Iyane - Mission Two",
+  eventDate: new Date("2027-07-15T16:00:00"),
+  venue: "Mission Control Pavilion",
+  address: "Beirut, Lebanon",
+  mapUrl: "https://www.google.com/maps?q=Beirut,Lebanon",
+  dressCode: "Silver, white, and space-bright colors",
+  heroCopy: "A second orbit around the sun - crew photos, wishes, and tiny launch notes.",
+  isActive: false,
+  createdAt: new Date(),
+};
+
+export const DEMO_EVENTS: EventRow[] = [DEMO_EVENT];
+export const LOCAL_TEST_EVENTS: EventRow[] = [LOCAL_TEST_EVENT_TWO];
+
+export function getDemoEvents({ includeLocalTestYears = false } = {}): EventRow[] {
+  return includeLocalTestYears ? [...LOCAL_TEST_EVENTS, ...DEMO_EVENTS] : DEMO_EVENTS;
+}
+
+export function isLocalTestEvent(event: Pick<EventRow, "year" | "themeSlug" | "title">): boolean {
+  return (
+    event.year === LOCAL_TEST_EVENT_TWO.year &&
+    event.themeSlug === LOCAL_TEST_EVENT_TWO.themeSlug &&
+    event.title === LOCAL_TEST_EVENT_TWO.title
+  );
+}
+
 const DEMO_META: { w: number; h: number; caption: string | null; by: string }[] = [
   { w: 1600, h: 1067, caption: "The first waltz", by: "Tante Layla" },
   { w: 1600, h: 1460, caption: null, by: "Maya K." },
@@ -50,19 +80,52 @@ const DEMO_META: { w: number; h: number; caption: string | null; by: string }[] 
   { w: 1600, h: 1067, caption: null, by: "Camille D." },
 ];
 
-export const DEMO_PHOTOS: PhotoRow[] = DEMO_META.map((m, i) => ({
-  id: `demo-photo-${i + 1}`,
-  eventId: DEMO_EVENT.id,
-  storageKey: `/demo/photo-${String(i + 1).padStart(2, "0")}.jpg`,
-  thumbKey: `/demo/thumb-${String(i + 1).padStart(2, "0")}.jpg`,
-  width: m.w,
-  height: m.h,
-  uploaderName: m.by,
-  caption: m.caption,
-  featured: i === 0,
-  status: "visible",
-  createdAt: new Date(Date.now() - i * 3_600_000),
+function buildDemoPhotos({
+  event,
+  idPrefix,
+  meta,
+  featuredIndex = 0,
+}: {
+  event: EventRow;
+  idPrefix: string;
+  meta: typeof DEMO_META;
+  featuredIndex?: number;
+}): PhotoRow[] {
+  return meta.map((m, i) => ({
+    id: `${idPrefix}-${i + 1}`,
+    eventId: event.id,
+    storageKey: `/demo/photo-${String(i + 1).padStart(2, "0")}.jpg`,
+    thumbKey: `/demo/thumb-${String(i + 1).padStart(2, "0")}.jpg`,
+    width: m.w,
+    height: m.h,
+    uploaderName: m.by,
+    caption: m.caption,
+    featured: i === featuredIndex,
+    status: "visible",
+    createdAt: new Date(Date.now() - i * 3_600_000),
+  }));
+}
+
+const DEMO_YEAR_TWO_META: typeof DEMO_META = DEMO_META.slice(0, 12).map((m, i) => ({
+  ...m,
+  caption: i === 0 ? "Moonwalk moment" : m.caption,
 }));
+
+export const DEMO_PHOTOS: PhotoRow[] = buildDemoPhotos({
+  event: DEMO_EVENT,
+  idPrefix: "demo-photo",
+  meta: DEMO_META,
+});
+
+export const LOCAL_TEST_PHOTOS: PhotoRow[] = buildDemoPhotos({
+  event: LOCAL_TEST_EVENT_TWO,
+  idPrefix: "demo-year-two-photo",
+  meta: DEMO_YEAR_TWO_META,
+});
+
+export function getDemoPhotos({ includeLocalTestYears = false } = {}): PhotoRow[] {
+  return includeLocalTestYears ? [...DEMO_PHOTOS, ...LOCAL_TEST_PHOTOS] : DEMO_PHOTOS;
+}
 
 export const DEMO_GUESTBOOK: GuestbookRow[] = [
   {

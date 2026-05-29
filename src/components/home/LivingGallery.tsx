@@ -116,7 +116,7 @@ export function LivingGallery({
       {/* Bottom caption: photo credit on the left, guest count on the right.
           A simple gradient bar — NOT a second footer (the SiteFooter renders below). */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
-        <div className="pointer-events-auto mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pb-5 pt-16 sm:px-8">
+        <div className="pointer-events-auto mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pr-20 pb-5 pt-16 sm:px-8">
           <p className={`min-w-0 truncate font-body text-sm italic text-on-dark/90 sm:text-base ${shadow}`}>
             {current?.uploaderName ? (
               <>Photo by <span className="font-bold not-italic text-accent">{current.uploaderName}</span></>

@@ -17,7 +17,7 @@ export function ScallopedHeader({
   scallop?: "bottom" | "top" | "none";
 }) {
   return (
-    <div className={cn("relative bg-primary text-on-dark", className)}>
+    <div className={cn("site-marquee relative bg-primary text-on-dark", className)}>
       {children}
       {scallop === "bottom" && <Scallops position="bottom" />}
       {scallop === "top" && <Scallops position="top" />}
@@ -31,7 +31,7 @@ function Scallops({ position }: { position: "top" | "bottom" }) {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute left-0 right-0 h-4"
+      className="site-scallops pointer-events-none absolute left-0 right-0 h-4"
       style={isBottom ? { bottom: "-16px" } : { top: "-16px" }}
     >
       <svg
