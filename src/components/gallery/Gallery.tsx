@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { MasonryPhotoAlbum } from "react-photo-album";
-import "react-photo-album/masonry.css";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import Captions from "yet-another-react-lightbox/plugins/captions";
@@ -10,6 +8,7 @@ import "yet-another-react-lightbox/plugins/captions.css";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import type { PhotoDTO } from "@/lib/photo";
 import { ButtonLink } from "@/components/ui/Button";
+import { StarRule } from "@/components/ui/StarRule";
 import { cn } from "@/lib/cn";
 
 export interface GalleryContributor {
@@ -46,15 +45,15 @@ const lightboxStyles = {
   navigationPrev: { color: "var(--c-accent-bright)" },
   navigationNext: { color: "var(--c-accent-bright)" },
   captionsTitle: {
-    fontFamily: "var(--font-serif)",
+    fontFamily: "var(--font-body)",
     fontStyle: "italic",
     fontSize: "1.3rem",
     color: "var(--c-on-dark)",
   },
   captionsDescription: {
-    fontFamily: "var(--font-serif-sc)",
+    fontFamily: "var(--font-mono)",
     textTransform: "uppercase" as const,
-    letterSpacing: "0.26em",
+    letterSpacing: "0.14em",
     fontSize: "0.7rem",
     color: "var(--c-accent)",
   },
@@ -70,10 +69,13 @@ function toSlides(photos: PhotoDTO[]) {
   }));
 }
 
+type Tab = typeof ALL | "recent" | "by-guest";
+
 export function Gallery({ featured, contributors, initial, nextOffset, totalPhotos, year }: GalleryProps) {
   const [photos, setPhotos] = useState<PhotoDTO[]>(initial);
   const [next, setNext] = useState<number | null>(nextOffset);
   const [active, setActive] = useState<string>(ALL);
+  const [tab, setTab] = useState<Tab>(ALL);
   const [loading, setLoading] = useState(false);
   const [index, setIndex] = useState(-1);
   const [featuredOpen, setFeaturedOpen] = useState(false);
@@ -121,36 +123,31 @@ export function Gallery({ featured, contributors, initial, nextOffset, totalPhot
   // Don't show the featured photo twice — when its hero is visible (the "all"
   // scope), drop it from the grid + lightbox below.
   const gridPhotos = featured && active === ALL ? photos.filter((p) => p.id !== featured.id) : photos;
-  const albumPhotos = gridPhotos.map((p) => ({
-    src: p.thumbUrl,
-    width: p.width,
-    height: p.height,
-    alt: p.caption ?? (p.uploaderName ? `Photo by ${p.uploaderName}` : "A moment from the day"),
-    key: p.id,
-  }));
 
   return (
     <div>
-      {/* Featured moment */}
+      {/* Featured moment — a vintage playbill panel */}
       {featured && active === ALL && (
-        <figure className="mx-auto mb-14 max-w-4xl">
-          <p className="eyebrow eyebrow-mute mb-3 text-center">A moment from the room</p>
+        <figure className="mb-10">
+          <p className="eyebrow mb-3 text-center">A Moment From the Room</p>
           <button
             onClick={() => setFeaturedOpen(true)}
-            className="group relative block w-full overflow-hidden border border-[color:var(--c-gold-rule)] bg-paper-deep"
+            className="group relative block w-full overflow-hidden border-[6px] border-accent bg-paper-deep"
+            style={{ boxShadow: "0 0 0 4px var(--c-ink)" }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={featured.url}
               alt={featured.caption ?? "Featured moment"}
-              className="max-h-[62vh] w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-              style={{ filter: "saturate(0.92) contrast(1.02)" }}
+              className="max-h-[62vh] w-full object-cover transition-transform duration-700 group-hover:scale-[1.01]"
             />
-            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary/85 via-primary/25 to-transparent p-6 text-left sm:p-8">
-              {featured.caption && <p className="h-title text-2xl text-on-dark sm:text-3xl">{featured.caption}</p>}
+            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent p-6 text-left sm:p-8">
+              {featured.caption && (
+                <p className="h-title text-2xl uppercase text-on-dark sm:text-3xl">{featured.caption}</p>
+              )}
               {featured.uploaderName && (
-                <p className="mt-1.5 font-sc text-[11px] uppercase tracking-[0.26em] text-accent-bright">
-                  — Photo by {featured.uploaderName}
+                <p className="mt-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-accent">
+                  — Added by {featured.uploaderName}
                 </p>
               )}
             </figcaption>
@@ -158,94 +155,112 @@ export function Gallery({ featured, contributors, initial, nextOffset, totalPhot
         </figure>
       )}
 
-      {/* Contribution banner */}
+      {/* Stats panel — keepsake card, gold-medal avatars, ADD YOURS ticket button */}
       {totalPhotos > 0 && (
-        <div className="mx-auto mb-8 flex max-w-5xl flex-col items-center justify-between gap-5 border-y border-[color:var(--c-gold-rule-faint)] px-1 py-6 sm:flex-row">
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-5">
+        <section className="deco-card mb-10 flex flex-col items-stretch justify-between gap-5 p-7 sm:flex-row sm:items-center">
+          <div className="flex flex-col items-start gap-4 sm:gap-5">
+            <p className="font-mono text-sm font-bold uppercase tracking-[0.12em] text-primary sm:text-base">
+              {totalPhotos} moments from {guestCount} guest{guestCount === 1 ? "" : "s"}
+            </p>
             {contributors.length > 0 && (
               <div className="flex items-center">
-                {contributors.slice(0, 6).map((c) => (
-                  <span
-                    key={keyOf(c.name)}
-                    className="iy-avatar"
-                    style={{ background: "var(--c-primary)" }}
-                    title={labelOf(c.name)}
-                  >
+                {contributors.slice(0, 5).map((c) => (
+                  <span key={keyOf(c.name)} className="iy-avatar" title={labelOf(c.name)}>
                     {initials(c.name)}
                   </span>
                 ))}
-                {guestCount > 6 && <span className="iy-avatar iy-avatar-more">+{guestCount - 6}</span>}
+                {guestCount > 5 && <span className="iy-avatar iy-avatar-more">+{guestCount - 5}</span>}
               </div>
             )}
-            <p className="h-title text-center text-xl text-ink sm:text-left sm:text-2xl">
-              <span className="font-sc not-italic text-gold-deep">{totalPhotos}</span> moment{totalPhotos === 1 ? "" : "s"}
-              {guestCount > 0 && (
-                <>
-                  {" "}
-                  from <span className="font-sc not-italic text-gold-deep">{guestCount}</span> guest
-                  {guestCount === 1 ? "" : "s"}
-                </>
-              )}
-            </p>
           </div>
-          <ButtonLink href="/upload" variant="gold">
-            + Add Yours
-          </ButtonLink>
+          <ButtonLink href="/upload">Add Yours</ButtonLink>
+        </section>
+      )}
+
+      {/* Filter rail */}
+      {contributors.length > 0 && (
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
+            <TabPill
+              active={tab === ALL}
+              onClick={() => {
+                setTab(ALL);
+                selectScope(ALL);
+              }}
+            >
+              All photos
+            </TabPill>
+            <TabPill
+              active={tab === "recent"}
+              onClick={() => {
+                setTab("recent");
+                selectScope(ALL); // server already returns newest first
+              }}
+            >
+              Recently added
+            </TabPill>
+            <ByGuestMenu
+              active={tab === "by-guest"}
+              activeScope={active}
+              contributors={contributors}
+              onAll={() => {
+                setTab(ALL);
+                selectScope(ALL);
+              }}
+              onPick={(name) => {
+                setTab("by-guest");
+                selectScope(keyOf(name));
+              }}
+            />
+          </div>
+          <div className="hidden items-center gap-2 sm:flex">
+            <span className="pulse" />
+            <span className="font-body text-sm italic text-primary">
+              {photos.length} moments on the wall
+            </span>
+          </div>
         </div>
       )}
 
-      {/* Filter rail — browse all, or by guest */}
-      {contributors.length > 0 && (
-        <div className="mb-9 flex snap-x gap-4 overflow-x-auto pb-2 sm:justify-center">
-          <ScopeSeal label="Everyone" count={totalPhotos} active={active === ALL} onClick={() => selectScope(ALL)} />
-          {contributors.map((c) => (
-            <ScopeSeal
-              key={keyOf(c.name)}
-              label={labelOf(c.name)}
-              count={c.count}
-              cover={c.coverUrl}
-              active={active === keyOf(c.name)}
-              onClick={() => selectScope(keyOf(c.name))}
-            />
-          ))}
-        </div>
-      )}
+      {/* Section separator */}
+      <StarRule className="mb-10" />
 
       {/* Grid */}
       {gridPhotos.length === 0 ? (
-        <div className="border border-dashed border-[color:var(--c-gold-rule)] bg-surface p-16 text-center">
-          <p className="script text-5xl text-ink">The wall is waiting</p>
-          <p className="mt-3 text-ink-soft">Be the first to place a photograph from the celebration.</p>
-          <ButtonLink href="/upload" variant="navy" className="mt-6">
+        <div className="deco-card p-12 text-center">
+          <p className="script text-4xl text-ink">The wall is waiting</p>
+          <p className="mt-3 font-body text-base text-ink-soft">Be the first to place a photograph from the celebration.</p>
+          <ButtonLink href="/upload" className="mt-6">
             Add your photos
           </ButtonLink>
         </div>
       ) : (
-        <div className={cn("iy-album transition-opacity", loading && "opacity-60")}>
-          <MasonryPhotoAlbum
-            photos={albumPhotos}
-            columns={(width) => (width < 480 ? 2 : width < 900 ? 3 : 4)}
-            spacing={1}
-            onClick={({ index: i }) => setIndex(i)}
-            render={{
-              extras: (_, { index: i }) => {
-                const p = gridPhotos[i];
-                if (!p) return null;
-                return (
-                  <>
-                    <span className="iy-badge" aria-hidden="true">
-                      {initials(p.uploaderName)}
-                    </span>
-                    {p.uploaderName && (
-                      <figcaption className="iy-attr">
-                        <span className="dash">—</span> Added by {p.uploaderName}
-                      </figcaption>
-                    )}
-                  </>
-                );
-              },
-            }}
-          />
+        <div className={cn("columns-2 gap-6 transition-opacity md:columns-3 [&>figure]:mb-6", loading && "opacity-60")}>
+          {gridPhotos.map((p, i) => (
+            <figure key={p.id} className="iy-tile break-inside-avoid">
+              <button
+                onClick={() => setIndex(i)}
+                className="iy-shot w-full cursor-zoom-in"
+                aria-label={p.caption ?? (p.uploaderName ? `Photo by ${p.uploaderName}` : "View photograph")}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p.thumbUrl}
+                  alt={p.caption ?? (p.uploaderName ? `Photo by ${p.uploaderName}` : "A moment from the day")}
+                  loading="lazy"
+                />
+              </button>
+              {/* bottom corner stars (top two come from ::before/::after) */}
+              <span className="iy-star-bl" aria-hidden="true" />
+              <span className="iy-star-br" aria-hidden="true" />
+              <figcaption className="iy-cap">
+                <p className="iy-cap-name">
+                  <span className="text-primary">★</span> {p.uploaderName ?? "A guest"}
+                </p>
+                {p.caption && <p className="iy-cap-note">“{p.caption}”</p>}
+              </figcaption>
+            </figure>
+          ))}
         </div>
       )}
 
@@ -254,7 +269,7 @@ export function Gallery({ featured, contributors, initial, nextOffset, totalPhot
           <button
             onClick={loadMore}
             disabled={loading}
-            className="font-sc text-[11px] uppercase tracking-[0.28em] text-ink underline-offset-[6px] transition hover:text-gold-deep hover:underline disabled:opacity-50"
+            className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-ink underline-offset-[6px] transition hover:text-primary hover:underline disabled:opacity-50"
           >
             {loading ? "Gathering…" : "Show more of the wall →"}
           </button>
@@ -284,40 +299,82 @@ export function Gallery({ featured, contributors, initial, nextOffset, totalPhot
   );
 }
 
-function ScopeSeal({
-  label,
-  count,
-  cover,
+function TabPill({
   active,
+  children,
   onClick,
 }: {
-  label: string;
-  count: number;
-  cover?: string;
   active: boolean;
+  children: React.ReactNode;
   onClick: () => void;
 }) {
   return (
-    <button onClick={onClick} className="flex w-[72px] shrink-0 snap-start flex-col items-center gap-2 text-center">
-      <span
+    <button
+      onClick={onClick}
+      className={cn(
+        "font-mono text-sm font-bold uppercase tracking-[0.1em] transition-colors",
+        active ? "nav-active text-primary" : "text-ink hover:text-primary",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ByGuestMenu({
+  active,
+  activeScope,
+  contributors,
+  onAll,
+  onPick,
+}: {
+  active: boolean;
+  activeScope: string;
+  contributors: GalleryContributor[];
+  onAll: () => void;
+  onPick: (name: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const activeName =
+    activeScope !== ALL
+      ? contributors.find((c) => keyOf(c.name) === activeScope)?.name ?? "Anonymous"
+      : null;
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((s) => !s)}
         className={cn(
-          "relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full transition",
-          active ? "ring-1 ring-accent ring-offset-4 ring-offset-bg" : "opacity-90 hover:opacity-100",
+          "font-mono text-sm font-bold uppercase tracking-[0.1em] transition-colors",
+          active ? "nav-active text-primary" : "text-ink hover:text-primary",
         )}
       >
-        <span className={cn("absolute inset-0 rounded-full border", active ? "border-accent" : "border-accent/45")} />
-        {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={cover} alt={label} className="h-full w-full rounded-full object-cover" style={{ filter: "saturate(0.92)" }} />
-        ) : (
-          <span className="flex h-full w-full items-center justify-center rounded-full bg-primary font-sc text-[11px] uppercase tracking-[0.1em] text-accent">
-            {label === "Everyone" ? "ALL" : initials(label)}
-          </span>
-        )}
-      </span>
-      <span className={cn("max-w-full truncate font-sc text-[10px] uppercase tracking-[0.18em]", active ? "text-ink" : "text-muted")}>
-        {label}
-      </span>
-    </button>
+        {activeName ? `By: ${activeName}` : "By guest"} ▾
+      </button>
+      {open && (
+        <div className="deco-card absolute left-0 top-full z-30 mt-3 max-h-72 w-56 overflow-y-auto p-3">
+          <button
+            onClick={() => {
+              setOpen(false);
+              onAll();
+            }}
+            className="block w-full px-2 py-1.5 text-left font-mono text-xs font-bold uppercase tracking-[0.1em] hover:bg-accent/40"
+          >
+            Everyone
+          </button>
+          {contributors.map((c) => (
+            <button
+              key={keyOf(c.name)}
+              onClick={() => {
+                setOpen(false);
+                onPick(c.name);
+              }}
+              className="block w-full px-2 py-1.5 text-left font-mono text-xs font-bold uppercase tracking-[0.1em] hover:bg-accent/40"
+            >
+              {labelOf(c.name)} <span className="text-ink-soft">· {c.count}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

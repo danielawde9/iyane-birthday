@@ -72,7 +72,7 @@ export function Uploader({ requirePin }: { requirePin: boolean }) {
     QRCode.toDataURL(`${window.location.origin}/upload`, {
       margin: 1,
       width: 240,
-      color: { dark: "#0E2240", light: "#F6EFE2" },
+      color: { dark: "#221B03", light: "#FFF8F0" },
     })
       .then(setQr)
       .catch(() => setQr(null));
@@ -162,7 +162,7 @@ export function Uploader({ requirePin }: { requirePin: boolean }) {
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       {/* Left — drop zone + staged grid */}
       <div className="flex flex-col gap-7">
         <div
@@ -187,7 +187,7 @@ export function Uploader({ requirePin }: { requirePin: boolean }) {
               <CrestSmall className="h-9 w-14" />
               <p className="h-title text-2xl text-ink sm:text-3xl">Drop your photographs here</p>
               <p className="eyebrow eyebrow-mute">or tap to choose</p>
-              <p className="font-display text-sm italic text-muted">
+              <p className="font-display text-sm italic text-ink-soft">
                 JPEG · PNG · HEIC — optimised on your device before they&apos;re placed.
               </p>
             </div>
@@ -214,24 +214,38 @@ export function Uploader({ requirePin }: { requirePin: boolean }) {
         {items.length > 0 && (
           <div>
             <p className="eyebrow mb-3">Just added</p>
-            <div className="grid grid-cols-3 gap-px bg-[color:var(--c-gold-rule-faint)] p-px sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               {items.map((it) => (
-                <div key={it.id} className="relative aspect-square overflow-hidden bg-paper-deep">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={it.preview} alt={it.name} className="h-full w-full object-cover" style={{ filter: "saturate(0.92) contrast(1.02)" }} />
-                  {it.status !== "done" && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-primary/55 px-2 text-center font-sc text-[10px] uppercase tracking-[0.18em] text-on-dark">
+                <figure key={it.id} className="iy-tile">
+                  <div className="iy-shot aspect-square">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={it.preview}
+                      alt={it.name}
+                      className="absolute inset-0 h-full w-full object-cover"
+                      style={{ filter: "saturate(0.92) contrast(1.02)" }}
+                    />
+                    {(it.status === "processing" || it.status === "uploading") && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-projector-deep/55">
+                        <span className="iy-spin" />
+                      </div>
+                    )}
+                  </div>
+                  <figcaption className="iy-cap">
+                    <p
+                      className={cn(
+                        "iy-cap-name",
+                        it.status === "done" && "!text-gold-deep",
+                        it.status === "error" && "!text-primary",
+                      )}
+                    >
                       {it.status === "processing" && "Optimising…"}
                       {it.status === "uploading" && "Placing…"}
+                      {it.status === "done" && "★ Placed"}
                       {it.status === "error" && (it.error ?? "Failed")}
-                    </div>
-                  )}
-                  {it.status === "done" && (
-                    <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border border-accent bg-primary/70 text-[11px] text-accent">
-                      ✓
-                    </span>
-                  )}
-                </div>
+                    </p>
+                  </figcaption>
+                </figure>
               ))}
             </div>
           </div>
@@ -239,12 +253,12 @@ export function Uploader({ requirePin }: { requirePin: boolean }) {
       </div>
 
       {/* Right — signature + phone QR */}
-      <aside className="flex flex-col gap-5 lg:sticky lg:top-24">
-        <div className="deco-card p-6">
+      <aside className="flex flex-col gap-6 lg:sticky lg:top-24">
+        <div className="deco-card p-7">
           <p className="eyebrow">Sign your photographs</p>
           <label className="field-label mt-5" htmlFor="up-name">
             Your name{" "}
-            <span className="font-display normal-case italic tracking-normal text-muted">(optional)</span>
+            <span className="font-display normal-case italic tracking-normal text-ink-soft">(optional)</span>
           </label>
           <input
             id="up-name"
@@ -256,7 +270,7 @@ export function Uploader({ requirePin }: { requirePin: boolean }) {
           />
           <label className="field-label mt-7" htmlFor="up-caption">
             A note{" "}
-            <span className="font-display normal-case italic tracking-normal text-muted">(optional)</span>
+            <span className="font-display normal-case italic tracking-normal text-ink-soft">(optional)</span>
           </label>
           <input
             id="up-caption"
@@ -266,12 +280,12 @@ export function Uploader({ requirePin }: { requirePin: boolean }) {
             className="field-input"
             placeholder="Applied to the photos you add"
           />
-          <p className="mt-6 font-display text-sm italic text-muted">
+          <p className="mt-6 font-display text-sm italic text-ink-soft">
             Fill these in first — they&apos;re signed onto the photographs you add next.
           </p>
         </div>
 
-        <div className="flex items-center gap-4 border border-[color:var(--c-gold-rule-faint)] p-4">
+        <div className="deco-card flex items-center gap-4 p-5">
           {qr && (
             <span className="block shrink-0 bg-bg p-2 ring-1 ring-accent">
               {/* eslint-disable-next-line @next/next/no-img-element */}

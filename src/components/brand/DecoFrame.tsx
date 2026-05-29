@@ -1,43 +1,42 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-function Corner({ flip }: { flip: CSSProperties["transform"] }) {
+/**
+ * A vintage playbill frame: 4px ink outer border with a 1px ink inner stroke
+ * (the "misregistered print" ghost-feel), parchment fill, sharp corners. Same
+ * `{ children, className }` API as the prior keepsake DecoFrame.
+ */
+export function DecoFrame({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <svg
-      viewBox="0 0 48 48"
-      className="pointer-events-none absolute h-7 w-7 text-accent"
-      style={{ transform: flip }}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden="true"
+    <div
+      className={cn(
+        "relative bg-paper-deep",
+        // 4px ink frame with a stacked 1px ink inner stroke (the "misregistered"
+        // print look from the spec).
+        className,
+      )}
+      style={{
+        border: "4px solid var(--c-ink)",
+        boxShadow: "inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink)",
+      }}
     >
-      <path d="M3 16 V3 H16" />
-      <path d="M9 22 V9 H22" opacity="0.6" />
-      <circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
+      {/* corner stars */}
+      <Star className="absolute -left-2 -top-2 h-4 w-4 text-ink" />
+      <Star className="absolute -right-2 -top-2 h-4 w-4 text-ink" />
+      <Star className="absolute -bottom-2 -left-2 h-4 w-4 text-ink" />
+      <Star className="absolute -bottom-2 -right-2 h-4 w-4 text-ink" />
+      {children}
+    </div>
   );
 }
 
-/** Wraps content in an art-deco double-gold-rule frame with ornamented corners. */
-export function DecoFrame({ children, className }: { children: ReactNode; className?: string }) {
+function Star({ className }: { className?: string }) {
   return (
-    <div className={cn("relative", className)}>
-      <span className="pointer-events-none absolute inset-0 rounded-[3px] border border-accent/55" aria-hidden />
-      <span className="pointer-events-none absolute inset-[7px] rounded-[2px] border border-accent/25" aria-hidden />
-      <span className="absolute left-2 top-2">
-        <Corner flip="none" />
-      </span>
-      <span className="absolute right-2 top-2">
-        <Corner flip="scaleX(-1)" />
-      </span>
-      <span className="absolute bottom-2 left-2">
-        <Corner flip="scaleY(-1)" />
-      </span>
-      <span className="absolute bottom-2 right-2">
-        <Corner flip="scale(-1,-1)" />
-      </span>
-      {children}
-    </div>
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <polygon
+        points="12,2 14.5,9 22,9 16,13.5 18.5,21 12,16.5 5.5,21 8,13.5 2,9 9.5,9"
+        fill="currentColor"
+      />
+    </svg>
   );
 }

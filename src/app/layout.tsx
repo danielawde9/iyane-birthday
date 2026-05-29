@@ -1,39 +1,59 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Cormorant_SC, Italianno } from "next/font/google";
+import { Arimo, Libre_Caslon_Text, Space_Mono, Bagel_Fat_One, Quicksand, Caveat } from "next/font/google";
 import "./globals.css";
 import { getActiveTheme } from "@/lib/active-theme";
 import { themeToCssVars } from "@/themes";
 
-// The "Iyane keepsake" type system: an engraved serif (Cormorant Garamond, with
-// italics for the editorial voice), small-caps (Cormorant SC) for tracked labels,
-// and a flowing script (Italianno) for the name. Self-hosted via next/font.
-const serif = Cormorant_Garamond({
+// Default Grand Jubilee fonts.
+const arimo = Arimo({
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-arimo",
+  display: "swap",
+});
+const caslon = Libre_Caslon_Text({
+  subsets: ["latin"],
+  weight: ["400", "700"],
   style: ["normal", "italic"],
-  variable: "--font-cormorant",
+  variable: "--font-caslon",
   display: "swap",
 });
-const serifSc = Cormorant_SC({
+const spaceMono = Space_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-cormorant-sc",
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-spacemono",
   display: "swap",
 });
-const script = Italianno({
+
+// Sweet Sophomore (Year 2 / bright carnival) fonts.
+const bagel = Bagel_Fat_One({
   subsets: ["latin"],
   weight: "400",
-  variable: "--font-italianno",
+  variable: "--font-bagel",
+  display: "swap",
+});
+const quicksand = Quicksand({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-quicksand",
+  display: "swap",
+});
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-caveat",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: "Iyane · Year One — Gallery & Slideshow",
+  title: "Iyane — Gallery & Slideshow",
   description:
-    "A keepsake for Iyane's first year. A page written by the room — browse the gallery, leave a line in the guestbook, and add your photographs from the day.",
+    "Browse the gallery, leave a wish in the guestbook, and add your photographs to the keepsake.",
   openGraph: {
-    title: "Iyane · Year One",
-    description: "A shared keepsake — every photograph here was placed by a guest.",
+    title: "Iyane",
+    description: "A shared keepsake placed by every guest.",
     type: "website",
   },
 };
@@ -41,11 +61,13 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const theme = await getActiveTheme();
   const themeVars = themeToCssVars(theme) as React.CSSProperties;
+  const fontVars = [arimo, caslon, spaceMono, bagel, quicksand, caveat].map((f) => f.variable).join(" ");
   return (
     <html
       lang="en"
-      className={`${serif.variable} ${serifSc.variable} ${script.variable} h-full antialiased`}
+      className={`${fontVars} h-full antialiased`}
       style={themeVars}
+      data-theme={theme.slug}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

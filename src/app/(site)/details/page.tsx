@@ -1,6 +1,6 @@
 import { getActiveEvent } from "@/db/queries";
 import { getTheme } from "@/themes";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+import { PageShell } from "@/components/ui/PageShell";
 import { BowTie } from "@/components/brand/BowTie";
 
 export const dynamic = "force-dynamic";
@@ -19,11 +19,8 @@ export default async function DetailsPage() {
   const timeLabel = event?.eventDate ? formatTime(event.eventDate) : null;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-14">
-      <header className="mb-12 text-center">
-        <SectionTitle eyebrow="The particulars" title="The Details" />
-      </header>
-      <div className="grid gap-5 sm:grid-cols-3">
+    <PageShell eyebrow="The particulars" title="The Details">
+      <div className="grid gap-6 sm:grid-cols-3">
         <Card title="When">
           <p className="h-title text-2xl text-ink">{dateLabel}</p>
           {timeLabel && <p className="mt-1 font-display italic text-ink-soft">{timeLabel}</p>}
@@ -44,16 +41,16 @@ export default async function DetailsPage() {
         </Card>
         <Card title="Attire">
           <p className="h-title text-2xl text-ink">{event?.dressCode ?? theme.copy.dressCode}</p>
-          <BowTie className="mx-auto mt-4 h-5 w-10 text-accent" />
+          <BowTie className="mx-auto mt-4 h-5 w-10 text-gold-deep" />
         </Card>
       </div>
-    </div>
+    </PageShell>
   );
 }
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="deco-card flex h-full flex-col items-center gap-1 p-8 text-center">
+    <div className="deco-card flex h-full flex-col items-center gap-1 p-7 text-center">
       <h3 className="eyebrow mb-3">{title}</h3>
       {children}
     </div>

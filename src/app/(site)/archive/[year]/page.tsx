@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { listEvents, listVisiblePhotos, countVisiblePhotos, getFeaturedPhoto, listContributors } from "@/db/queries";
 import { toPhotoDTO } from "@/lib/photo";
 import { toPublicUrl } from "@/lib/storage";
-import { getTheme } from "@/themes";
+import { getTheme, themeToCssVars } from "@/themes";
 import { Gallery } from "@/components/gallery/Gallery";
+import { PageShell } from "@/components/ui/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -28,30 +29,37 @@ export default async function ArchiveYearPage({ params }: { params: Promise<{ ye
   const featured = featuredRow ? toPhotoDTO(featuredRow) : null;
   const contributors = contributorsRaw.map((c) => ({ name: c.name, count: c.count, coverUrl: toPublicUrl(c.coverKey) }));
   const theme = getTheme(event.themeSlug);
+  // Re-skin the archive content to this year's theme. CSS variables cascade,
+  // so every component inside this wrapper picks up the past year's palette
+  // (the site header/footer remain in the active year's chrome — they're
+  // rendered higher in the tree by (site)/layout.tsx).
+  const yearThemeVars = themeToCssVars(theme) as React.CSSProperties;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <header className="mb-10 text-center">
-        <p className="eyebrow">Year {event.year}</p>
-        <h1 className="h-title text-engrave mt-2 text-4xl text-ink sm:text-5xl">{event.title}</h1>
-        <p className="mt-2 font-display italic text-ink-soft">{theme.emoji} {theme.name}</p>
-        <hr className="rule-gold mx-auto mt-5 w-44" />
-        <Link
-          href="/archive"
-          className="mt-5 inline-block font-sc text-[10px] uppercase tracking-[0.26em] text-gold-deep underline-offset-4 hover:underline"
-        >
-          ← All years
-        </Link>
-      </header>
-
-      <Gallery
-        featured={featured}
-        contributors={contributors}
-        initial={initial}
-        nextOffset={hasMore ? INITIAL_LIMIT : null}
-        totalPhotos={total}
-        year={event.year}
-      />
+    <div className="bg-bg text-on-surface" style={yearThemeVars} data-theme={theme.slug}>
+      <PageShell
+        wide
+        eyebrow={`Year ${event.year}`}
+        title={event.title}
+        lead={`${theme.emoji} ${theme.name}`}
+        headerExtra={
+          <Link
+            href="/archive"
+            className="inline-block font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-primary underline-offset-4 hover:underline"
+          >
+            ← All years
+          </Link>
+        }
+      >
+        <Gallery
+          featured={featured}
+          contributors={contributors}
+          initial={initial}
+          nextOffset={hasMore ? INITIAL_LIMIT : null}
+          totalPhotos={total}
+          year={event.year}
+        />
+      </PageShell>
     </div>
   );
 }

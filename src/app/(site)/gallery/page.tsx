@@ -2,7 +2,7 @@ import { getActiveEvent, listVisiblePhotos, countVisiblePhotos, getFeaturedPhoto
 import { toPhotoDTO } from "@/lib/photo";
 import { toPublicUrl } from "@/lib/storage";
 import { Gallery } from "@/components/gallery/Gallery";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+import { PageShell } from "@/components/ui/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +13,11 @@ export default async function GalleryPage() {
 
   if (!event) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-20 text-center">
-        <SectionTitle eyebrow="The photo wall" title="Iyane's Year" />
-        <p className="mt-6 text-ink-soft">The wall opens once the celebration is set up.</p>
-      </div>
+      <PageShell
+        eyebrow="The photo wall"
+        title="Iyane's Year"
+        lead="The wall opens once the celebration is set up."
+      />
     );
   }
 
@@ -33,14 +34,12 @@ export default async function GalleryPage() {
   const contributors = contributorsRaw.map((c) => ({ name: c.name, count: c.count, coverUrl: toPublicUrl(c.coverKey) }));
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <header className="mb-10 text-center">
-        <SectionTitle eyebrow="The photo wall · a shared keepsake" title="Iyane's Year" />
-        <p className="mx-auto mt-5 max-w-xl font-display text-lg italic text-ink-soft">
-          A page written by the room — every photograph here came from a guest.
-        </p>
-      </header>
-
+    <PageShell
+      wide
+      eyebrow="The photo wall · a shared keepsake"
+      title="Iyane's Year"
+      lead="A page written by the room — every photograph here came from a guest."
+    >
       <Gallery
         featured={featured}
         contributors={contributors}
@@ -48,6 +47,6 @@ export default async function GalleryPage() {
         nextOffset={hasMore ? INITIAL_LIMIT : null}
         totalPhotos={total}
       />
-    </div>
+    </PageShell>
   );
 }

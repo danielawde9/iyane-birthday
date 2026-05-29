@@ -1,39 +1,51 @@
 @import "tailwindcss";
 
 /*
- * "Iyane keepsake" — an engraved-invitation system.
- * Paper #F6EFE2 · Ink navy #0E2240 · Antique gold #C9A24B
- * Cormorant Garamond (+ SC) · Italianno (script).
- * The :root values below are fallbacks; the active theme overrides them at
- * runtime (themeToCssVars), so the whole site re-skins per year.
+ * "The Grand Jubilee" — a vintage editorial / letterpress design system.
+ * Parchment #FFF8F0 · Big Top Red #AF101A · Aged Gold #FBC02D · Midnight ink #221B03.
+ * Arimo (display, woodblock-heavy) · Libre Caslon Text (body) · Space Mono (labels).
+ *
+ * Rules of this system:
+ *  - No drop shadows. Depth = 2px offset "ghost border" in ink or gold.
+ *  - No rounded corners. Sharp 0px throughout.
+ *  - No pure white. All surfaces sit on parchment.
+ *  - Star glyphs ★ as bullets, dividers, corner accents.
  */
 :root {
-  --c-bg: #f6efe2; /* paper */
-  --c-surface: #efe6d3; /* warm card paper */
-  --c-paper-deep: #e6dabf; /* deepest paper — photo tile backing */
-  --c-primary: #0e2240; /* ink navy */
-  --c-primary-deep: #091627; /* projector navy */
-  --c-projector-deep: #060f1b; /* projector vignette edge */
-  --c-accent: #c9a24b; /* gold */
-  --c-accent-bright: #e0c788; /* soft gold */
-  --c-gold-deep: #a8862f; /* deep gold */
-  --c-ink: #0e2240; /* ink detail */
-  --c-ink-soft: #2a3a57; /* secondary ink */
-  --c-on-dark: #f6efe2; /* text on navy */
-  --c-on-surface: #0e2240; /* body text on paper */
-  --c-muted: #6b7691; /* tertiary ink */
+  --c-bg: #fff8f0; /* parchment */
+  --c-surface: #fff8f0; /* same — vintage paper, never white */
+  --c-paper-deep: #fcedc5; /* deeper paper / panels */
+  --c-primary: #af101a; /* Big Top Red */
+  --c-primary-deep: #930010; /* deeper red */
+  --c-projector-deep: #410003; /* deep brick — slideshow backdrop */
+  --c-accent: #fbc02d; /* Aged Gold */
+  --c-accent-bright: #ffdfa0; /* light gold */
+  --c-gold-deep: #795900; /* deep gold */
+  --c-ink: #221b03; /* midnight brown-ink */
+  --c-ink-soft: #5b403d; /* secondary ink */
+  --c-on-dark: #fff8f0; /* parchment on red */
+  --c-on-surface: #221b03; /* body on parchment */
+  --c-muted: #8f6f6c; /* outline */
+  --c-joy: #af101a; /* red live-pulse */
 
-  /* Hairline rules, derived from the (themeable) ink + gold. */
-  --c-rule: color-mix(in srgb, var(--c-primary) 12%, transparent);
-  --c-gold-rule: color-mix(in srgb, var(--c-accent) 55%, transparent);
-  --c-gold-rule-faint: color-mix(in srgb, var(--c-accent) 28%, transparent);
+  /* Derived rules */
+  --c-rule: color-mix(in srgb, var(--c-ink) 22%, transparent);
+  --c-gold-rule: color-mix(in srgb, var(--c-accent) 75%, transparent);
+  --c-gold-rule-faint: color-mix(in srgb, var(--c-accent) 38%, transparent);
 
-  /* Font stacks composed from the next/font variables on <html>. Defined here
-   * (always emitted) so both plain CSS below and the Tailwind font utilities
-   * resolve to the same families. */
-  --font-serif: var(--font-cormorant), "Cormorant Garamond", Garamond, "Times New Roman", serif;
-  --font-serif-sc: var(--font-cormorant-sc), "Cormorant SC", var(--font-cormorant), serif;
-  --font-cursive: var(--font-italianno), "Pinyon Script", cursive;
+  /* Font stacks. Legacy --font-serif / --font-serif-sc / --font-cursive aliases
+   * are kept so older CSS and brand SVGs that reference them keep working. */
+  --font-arimo-stack: var(--font-arimo), "Arial Black", "Helvetica Neue", Helvetica, system-ui, sans-serif;
+  --font-caslon-stack: var(--font-caslon), "Libre Caslon Text", Caslon, Georgia, "Times New Roman", serif;
+  --font-mono-stack: var(--font-spacemono), "Courier New", "Andale Mono", monospace;
+
+  --font-display: var(--font-arimo-stack);
+  --font-body: var(--font-caslon-stack);
+  --font-mono: var(--font-mono-stack);
+  --font-script: var(--font-caslon-stack);
+  --font-serif: var(--font-caslon-stack);
+  --font-serif-sc: var(--font-mono-stack);
+  --font-cursive: var(--font-caslon-stack);
 }
 
 @theme inline {
@@ -51,11 +63,13 @@
   --color-on-dark: var(--c-on-dark);
   --color-on-surface: var(--c-on-surface);
   --color-muted: var(--c-muted);
+  --color-joy: var(--c-joy);
 
-  --font-display: var(--font-serif);
-  --font-body: var(--font-serif);
-  --font-sc: var(--font-serif-sc);
-  --font-script: var(--font-cursive);
+  --font-display: var(--font-arimo-stack);
+  --font-body: var(--font-caslon-stack);
+  --font-sc: var(--font-mono-stack);
+  --font-mono: var(--font-mono-stack);
+  --font-script: var(--font-caslon-stack);
 }
 
 html {
@@ -66,21 +80,21 @@ body {
   position: relative;
   background-color: var(--c-bg);
   color: var(--c-on-surface);
-  font-family: var(--font-serif);
+  font-family: var(--font-body);
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Subtle paper grain. */
+  /* Very subtle paper grain — barely perceptible flecks on parchment. */
   background-image:
-    radial-gradient(rgba(120, 90, 40, 0.025) 1px, transparent 1px),
-    radial-gradient(rgba(120, 90, 40, 0.02) 1px, transparent 1px);
+    radial-gradient(rgba(80, 50, 20, 0.025) 1px, transparent 1px),
+    radial-gradient(rgba(80, 50, 20, 0.02) 1px, transparent 1px);
   background-size: 3px 3px, 7px 7px;
   background-position: 0 0, 1px 2px;
 }
 
 ::selection {
-  background: var(--c-accent);
-  color: var(--c-primary-deep);
+  background: var(--c-primary);
+  color: var(--c-on-dark);
 }
 
 /* ============================================================
@@ -120,77 +134,180 @@ body {
   to { opacity: 1; transform: none; }
 }
 
-/* ============ Keepsake type ============ */
+/* ============ Editorial type ============
+ *
+ * All three type roles read their font-family from theme CSS variables
+ * (--font-display / --font-body / --font-mono / --font-script). The default
+ * :root values point at Grand Jubilee's Arimo / Caslon / Space Mono stacks;
+ * themes that ship `fonts: {...}` rebind them. So a year wearing Bagel Fat One
+ * for headlines just works without per-component CSS overrides. */
 .eyebrow {
-  font-family: var(--font-serif-sc);
-  font-weight: 500;
-  letter-spacing: 0.32em;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   font-size: 11px;
-  color: var(--c-gold-deep);
+  color: var(--c-primary);
 }
 .eyebrow-ink { color: var(--c-ink); }
-.eyebrow-mute { color: var(--c-muted); }
+.eyebrow-mute { color: var(--c-ink-soft); }
 
 .script {
-  font-family: var(--font-cursive);
+  font-family: var(--font-script);
   font-weight: 400;
-  font-style: normal;
-  line-height: 1;
-}
-
-.h-title {
-  font-family: var(--font-serif);
-  font-weight: 500;
   font-style: italic;
-  letter-spacing: 0.005em;
   line-height: 1.05;
 }
 
-/* Tracked deco capitals (kept for back-compat). */
-.caps {
-  text-transform: uppercase;
-  letter-spacing: 0.28em;
-}
-/* Faint engraved lift for headings on paper. */
-.text-engrave {
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+.h-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  color: var(--c-ink);
 }
 
-/* ============ Thin gold rules ============ */
+.caps {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+/* Hand-pressed "off-register" lift — a 2px gold ghost behind ink type. */
+.text-engrave {
+  text-shadow: 1px 1px 0 var(--c-accent);
+}
+
+/* ============ Bunting + rules ============ */
+/* `.rule-gold` is an ink line with a small star punched into the middle. */
 .rule-gold {
   border: 0;
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--c-gold-rule) 12%, var(--c-gold-rule) 88%, transparent);
+  height: 14px;
+  background:
+    linear-gradient(to right, var(--c-ink) 0, var(--c-ink) calc(50% - 12px), transparent calc(50% - 12px), transparent calc(50% + 12px), var(--c-ink) calc(50% + 12px), var(--c-ink) 100%) center / 100% 1px no-repeat;
+  position: relative;
   margin: 0;
 }
+.rule-gold::after {
+  content: "★";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--c-primary);
+  font-size: 14px;
+  line-height: 1;
+}
 .rule-gold-solid {
-  background: var(--c-gold-rule);
+  height: 1px;
+  background: var(--c-ink);
 }
 .rule-ink {
   height: 1px;
   background: var(--c-rule);
 }
 
-/* ============ Paper card (engraved, flat — not a soft shadow) ============ */
+/* ============ Cards (sharp, double-bordered, no shadow) ============ */
+/* Default keepsake card — a parchment panel with a thick ink frame and a
+ * 1px ink inner stroke. Depth comes from stacking, not shadow. */
 .deco-card {
-  background: var(--c-surface);
-  border: 1px solid var(--c-gold-rule-faint);
-  border-radius: 2px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: var(--c-paper-deep);
+  border: 4px solid var(--c-ink);
+  box-shadow: inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink);
+  border-radius: 0;
 }
 
-/* ============ Underline-style keepsake field ============ */
+/* Ghost-border focus — 2px offset misregistered print look. */
+.ghost-ink {
+  box-shadow: 4px 4px 0 var(--c-ink);
+}
+.ghost-gold {
+  box-shadow: 4px 4px 0 var(--c-accent);
+}
+
+/* Ticket-stub variant: a panel with semi-circle notches cut out of the sides
+ * (vintage raffle ticket). Side bg matches the page bg so the notches "punch
+ * through" cleanly on the parchment background. */
+.ticket-stub {
+  position: relative;
+  background: var(--c-paper-deep);
+  border: 4px solid var(--c-ink);
+  border-radius: 0;
+  padding: 14px 22px;
+}
+.ticket-stub::before,
+.ticket-stub::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  background: var(--c-bg);
+  border: 4px solid var(--c-ink);
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+.ticket-stub::before { left: -11px; }
+.ticket-stub::after { right: -11px; }
+
+/* ============ Ticket buttons ============ */
+/* Buttons cut as raffle tickets — semi-circle notches on the vertical
+ * centers. Implemented via radial-gradient mask so the notch removes pixels
+ * cleanly without needing a wrapper. */
+.btn-ticket {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-arimo-stack);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  font-size: 13px;
+  background: var(--c-accent);
+  color: var(--c-ink);
+  border: 3px solid var(--c-ink);
+  border-radius: 0;
+  position: relative;
+  cursor: pointer;
+  transition: transform 120ms ease;
+  /* mask creates the semi-circle notches */
+  -webkit-mask:
+    radial-gradient(circle 8px at 0 50%, transparent 98%, #000 100%),
+    radial-gradient(circle 8px at 100% 50%, transparent 98%, #000 100%),
+    linear-gradient(#000, #000);
+  -webkit-mask-composite: source-in, source-in;
+          mask:
+    radial-gradient(circle 8px at 0 50%, transparent 98%, #000 100%),
+    radial-gradient(circle 8px at 100% 50%, transparent 98%, #000 100%),
+    linear-gradient(#000, #000);
+          mask-composite: intersect;
+}
+.btn-ticket:hover { transform: translateY(-1px); }
+.btn-ticket:active { transform: translateY(0); }
+.btn-ticket-red {
+  background: var(--c-primary);
+  color: var(--c-on-dark);
+  border-color: var(--c-ink);
+}
+.btn-ticket-blue {
+  background: var(--c-ink);
+  color: var(--c-on-dark);
+}
+
+/* ============ Ledger-line inputs ============ */
 .field-input {
   width: 100%;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--c-ink);
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 19px;
+  border-bottom: 2px solid var(--c-ink);
+  border-radius: 0;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
   color: var(--c-ink);
-  padding: 6px 0 8px;
+  padding: 8px 0 10px;
   outline: none;
   transition: border-color 180ms ease;
 }
@@ -198,181 +315,556 @@ body {
   color: var(--c-muted);
   font-style: italic;
 }
-.field-input:focus { border-bottom-color: var(--c-accent); }
+.field-input:focus { border-bottom-color: var(--c-primary); }
 .field-textarea {
   width: 100%;
   resize: vertical;
-  min-height: 64px;
-  line-height: 1.45;
-  font-family: var(--font-serif);
+  min-height: 96px;
+  line-height: 1.5;
+  font-family: var(--font-body);
+  font-weight: 400;
   font-size: 16px;
   color: var(--c-ink);
-  border: 1px solid var(--c-rule);
-  padding: 10px 12px;
-  background: var(--c-bg);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid var(--c-ink);
+  border-radius: 0;
+  padding: 10px 0;
   outline: none;
   transition: border-color 180ms ease;
 }
-.field-textarea::placeholder { color: var(--c-muted); }
-.field-textarea:focus { border-color: var(--c-accent); }
+.field-textarea::placeholder { color: var(--c-muted); font-style: italic; }
+.field-textarea:focus { border-bottom-color: var(--c-primary); }
 .field-label {
   display: block;
-  font-family: var(--font-serif-sc);
+  font-family: var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.18em;
   font-size: 11px;
+  font-weight: 700;
   color: var(--c-ink);
   margin-bottom: 8px;
 }
 
 /* ============ Live pulse dot ============ */
 .pulse {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: var(--c-accent);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-accent) 70%, transparent);
-  animation: iy-pulse 1.8s ease-out infinite;
+  background: var(--c-primary);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-primary) 70%, transparent);
+  animation: iy-pulse 1.6s ease-out infinite;
 }
 @keyframes iy-pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-accent) 55%, transparent); }
-  70% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--c-accent) 0%, transparent); }
-  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-accent) 0%, transparent); }
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-primary) 60%, transparent); }
+  70% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--c-primary) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-primary) 0%, transparent); }
 }
 
-/* ============ Overlapping contributor avatars ============ */
+/* ============ Gold-medal avatars ============ */
+/* Contributor photos: perfect circle, 4px Aged Gold ring, small stars at
+ * 12 / 3 / 6 / 9 o'clock. Pure CSS — no SVG needed. */
 .iy-avatar {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-serif-sc);
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   color: var(--c-on-dark);
-  border: 1.5px solid var(--c-accent);
-  box-shadow: 0 0 0 2px var(--c-bg);
-  margin-left: -10px;
+  background: var(--c-primary);
+  border: 3px solid var(--c-accent);
+  box-shadow: 0 0 0 2px var(--c-ink);
+  margin-left: -8px;
   text-transform: uppercase;
+  position: relative;
 }
 .iy-avatar:first-child { margin-left: 0; }
+.iy-avatar::before,
+.iy-avatar::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--c-accent);
+  /* 5-point star clip */
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.iy-avatar::before { top: -10px; left: 50%; transform: translateX(-50%); }
+.iy-avatar::after { bottom: -10px; left: 50%; transform: translateX(-50%); }
 .iy-avatar-more {
-  background: var(--c-bg);
+  background: var(--c-accent);
   color: var(--c-ink);
 }
 
-/* ============ Masonry tile dressing (overlaid in the gallery) ============ */
+/* ============ Photo tiles ============ */
+/* Gold-framed paper-cut tiles with four corner star punches in the ink color. */
 .iy-tile {
   position: relative;
-  height: 100%;
-  overflow: hidden;
+  overflow: visible;
   background: var(--c-paper-deep);
-  cursor: zoom-in;
+  border: 6px solid var(--c-accent);
+  border-radius: 0;
+}
+/* The image window inside a tile — clips the photo's scale-on-hover. */
+.iy-shot {
+  display: block;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
 }
 .iy-tile img {
   width: 100%;
-  height: 100%;
+  height: auto;
   display: block;
-  object-fit: cover;
   transition: transform 600ms cubic-bezier(0.2, 0.6, 0.2, 1), filter 400ms;
-  filter: saturate(0.92) contrast(1.02);
+  filter: saturate(0.98) contrast(1.02);
 }
-.iy-tile:hover img {
-  transform: scale(1.025);
-  filter: saturate(1) contrast(1.02);
+.iy-tile:hover .iy-shot img {
+  transform: scale(1.03);
 }
+/* Caption plate riveted under the photo, divided by a gold rule. */
+.iy-cap {
+  border-top: var(--v-tile-border, 2px) solid var(--c-accent);
+  background: var(--c-paper-deep);
+  padding: 9px 12px 10px;
+  text-align: center;
+}
+.iy-cap .iy-cap-name {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  color: var(--c-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iy-cap .iy-cap-note {
+  margin-top: 3px;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: var(--c-ink-soft);
+}
+/* Small rotating ring used on in-progress upload tiles. */
+.iy-spin {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--c-bg) 55%, transparent);
+  border-top-color: var(--c-accent);
+  animation: iy-spin 0.8s linear infinite;
+}
+@keyframes iy-spin {
+  to { transform: rotate(360deg); }
+}
+.iy-tile::before,
+.iy-tile::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--c-ink);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  z-index: 2;
+}
+.iy-tile::before { top: -2px; left: -2px; }
+.iy-tile::after { top: -2px; right: -2px; }
+/* Bottom corner stars are injected as real <span> elements (since pseudo-elements
+ * are limited to two per element). They render via these rules — content: "" is
+ * not needed on real elements; the span is a sized box with a clip-path. */
+.iy-tile > .iy-star-bl,
+.iy-tile > .iy-star-br,
+.iy-album button > .iy-star-bl,
+.iy-album button > .iy-star-br {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--c-ink);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  z-index: 2;
+}
+.iy-tile > .iy-star-bl { bottom: -2px; left: -2px; }
+.iy-tile > .iy-star-br { bottom: -2px; right: -2px; }
+.iy-album button > .iy-star-bl { bottom: -2px; left: -2px; }
+.iy-album button > .iy-star-br { bottom: -2px; right: -2px; }
+
+/* Also draw the top star corners on masonry album buttons (which don't have
+ * .iy-tile, they're library-managed buttons). */
+.iy-album button::before,
+.iy-album button::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--c-ink);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  z-index: 2;
+  pointer-events: none;
+}
+.iy-album button::before { top: -2px; left: -2px; }
+.iy-album button::after { top: -2px; right: -2px; }
+
+/* Red + gold initials badge in the bottom-right corner. */
 .iy-badge {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-serif-sc);
+  font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--c-on-dark);
-  background: color-mix(in srgb, var(--c-primary) 62%, transparent);
-  border: 1px solid var(--c-accent);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--c-accent);
+  background: var(--c-primary);
+  border: 2px solid var(--c-accent);
+  border-radius: 50%;
   text-transform: uppercase;
-  backdrop-filter: blur(2px);
+  z-index: 3;
 }
 .iy-attr {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 28px 14px 12px;
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--c-primary) 78%, transparent) 0%,
-    color-mix(in srgb, var(--c-primary) 28%, transparent) 60%,
-    transparent 100%
-  );
-  font-family: var(--font-serif-sc);
+  font-family: var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: 0.24em;
-  font-size: 10.5px;
-  color: var(--c-accent-bright);
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-ink);
+  margin-top: 10px;
+  text-align: center;
 }
 .iy-attr .dash {
-  color: var(--c-accent);
   margin-right: 8px;
 }
-.iy-tile.is-fresh::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 1px solid var(--c-accent);
-  pointer-events: none;
-  z-index: 2;
-  animation: iy-fresh 2.4s ease-out 1;
-}
-@keyframes iy-fresh {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
-}
+.iy-tile.is-fresh::before,
+.iy-tile.is-fresh::after { background: var(--c-primary); }
 
-/* react-photo-album masonry, dressed as the keepsake wall: hairline gold
- * gutters (gold backing shows through the 1px gaps) + a slow hover zoom. */
+/* The masonry album: light gold backing, with the tiles themselves bringing
+ * their own gold frames + corner stars. */
 .iy-album {
-  background: var(--c-gold-rule-faint);
-  padding: 1px;
+  background: var(--c-bg);
+  padding: 0;
 }
 .iy-album button {
   position: relative;
   overflow: hidden;
   cursor: zoom-in;
   background: var(--c-paper-deep);
+  border: 6px solid var(--c-accent);
 }
 .iy-album img {
   display: block;
-  filter: saturate(0.92) contrast(1.02);
+  filter: saturate(0.98) contrast(1.02);
   transition: transform 600ms cubic-bezier(0.2, 0.6, 0.2, 1), filter 400ms;
 }
 .iy-album button:hover img {
-  transform: scale(1.04);
-  filter: saturate(1) contrast(1.02);
+  transform: scale(1.03);
 }
 
-/* ============ Add-photos drop zone (dashed gold double frame) ============ */
+/* ============ Drop-zone (ledger frame) ============ */
 .iy-drop-frame {
-  border: 1px dashed var(--c-accent);
-  margin: 10px;
-  padding: 48px 24px;
+  border: 4px solid var(--c-ink);
+  box-shadow: inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink);
+  border-radius: 0;
+  margin: 0;
+  padding: 56px 28px;
+  position: relative;
+  background: var(--c-paper-deep);
+}
+
+/* ============ Scalloped tent-flap edges ============ */
+/* `.scallop-bottom` / `.scallop-top` produce a wavy semi-circle edge on the
+ * indicated side using a radial-gradient mask. Apply to a colored bar (the
+ * scallops "punch through" to the page bg). */
+.scallop-bottom {
+  -webkit-mask:
+    radial-gradient(circle 14px at 14px 100%, transparent 98%, #000 100%) 0 0 / 28px 100%,
+    linear-gradient(#000, #000) 0 0 / 100% calc(100% - 18px) no-repeat;
+          mask:
+    radial-gradient(circle 14px at 14px 100%, transparent 98%, #000 100%) 0 0 / 28px 100%,
+    linear-gradient(#000, #000) 0 0 / 100% calc(100% - 18px) no-repeat;
+  -webkit-mask-composite: source-over;
+          mask-composite: add;
+}
+.scallop-top {
+  -webkit-mask:
+    radial-gradient(circle 14px at 14px 0, transparent 98%, #000 100%) 0 0 / 28px 100%,
+    linear-gradient(#000, #000) 0 18px / 100% calc(100% - 18px) no-repeat;
+          mask:
+    radial-gradient(circle 14px at 14px 0, transparent 98%, #000 100%) 0 0 / 28px 100%,
+    linear-gradient(#000, #000) 0 18px / 100% calc(100% - 18px) no-repeat;
+  -webkit-mask-composite: source-over;
+          mask-composite: add;
+}
+
+/* "Admit One" rotated stamp — applied to a small badge inline. */
+.admit-stamp {
+  display: inline-block;
+  background: var(--c-ink);
+  color: var(--c-accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 10px;
+  padding: 4px 12px;
+  transform: rotate(-5deg);
+}
+
+/* Underline-on-active for nav, applied as a 2px gold rule. */
+.nav-active {
   position: relative;
 }
-.iy-drop-frame::before {
+.nav-active::after {
   content: "";
   position: absolute;
-  inset: 4px;
-  border: 1px solid var(--c-gold-rule-faint);
-  pointer-events: none;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  background: var(--c-accent);
+}
+
+/* ============================================================================
+ * Per-theme variant variables
+ *
+ * Visual decisions that change between themes (corner radius, border weights,
+ * whether to show corner stars, button mask, etc.) live as CSS custom
+ * properties. Each [data-theme="X"] selector below sets the FULL set of
+ * variant variables. The rules under "Variant-driven components" lower down
+ * read these vars — so a nested wrapper that sets data-theme="big-top" inside
+ * an html with data-theme="sweet-sophomore" cleanly resets every visual
+ * decision, not just colors.
+ *
+ * Adding a new year's theme = pick a slug, set its palette + copy in a theme
+ * module, and add a [data-theme="<slug>"] block here choosing the variant
+ * variables. The default :root values are the Grand Jubilee/vintage choices.
+ * =========================================================================== */
+
+/* Defaults = Grand Jubilee / vintage editorial. */
+:root {
+  --v-radius-sm: 0px;
+  --v-radius-md: 0px;
+  --v-radius-pill: 0px;
+  --v-tile-border: 6px;
+  --v-card-border: 4px;
+  --v-card-inset-stroke: inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink);
+  --v-card-shadow: none;
+  --v-btn-mask:
+    radial-gradient(circle 8px at 0 50%, transparent 98%, #000 100%),
+    radial-gradient(circle 8px at 100% 50%, transparent 98%, #000 100%),
+    linear-gradient(#000, #000);
+  --v-btn-mask-composite: intersect;
+  --v-btn-border-width: 3px;
+  --v-btn-shadow: none;
+  --v-btn-shadow-hover: none;
+  --v-btn-padding: 14px 32px;
+  --v-btn-letter-spacing: 0.12em;
+  --v-input-bg: transparent;
+  --v-input-border: 0;
+  --v-input-border-bottom: 2px solid var(--c-ink);
+  --v-input-padding: 8px 0 10px;
+  --v-input-focus-shadow: none;
+  --v-input-focus-border-bottom: 2px solid var(--c-primary);
+  --v-corner-stars: block;
+  --v-avatar-corner-stars: block;
+  --v-title-weight: 700;
+  --v-title-tracking: -0.01em;
+  --v-title-transform: none;
+  --v-body-weight: 400;
+  --v-pulse-bg: var(--c-primary);
+  --v-album-bg: var(--c-bg);
+  --v-paper-grain: radial-gradient(rgba(80, 50, 20, 0.025) 1px, transparent 1px),
+                    radial-gradient(rgba(80, 50, 20, 0.02) 1px, transparent 1px);
+  --v-paper-grain-size: 3px 3px, 7px 7px;
+  --v-paper-grain-position: 0 0, 1px 2px;
+}
+
+/* Big Top / Grand Jubilee — same as defaults but explicit so a nested wrapper
+ * resets cleanly even when the outer html runs a different theme. */
+[data-theme="big-top"],
+[data-theme="mr-onederful"] {
+  --v-radius-sm: 0px;
+  --v-radius-md: 0px;
+  --v-radius-pill: 0px;
+  --v-tile-border: 6px;
+  --v-card-border: 4px;
+  --v-card-inset-stroke: inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink);
+  --v-card-shadow: none;
+  --v-btn-mask:
+    radial-gradient(circle 8px at 0 50%, transparent 98%, #000 100%),
+    radial-gradient(circle 8px at 100% 50%, transparent 98%, #000 100%),
+    linear-gradient(#000, #000);
+  --v-btn-mask-composite: intersect;
+  --v-btn-border-width: 3px;
+  --v-btn-shadow: none;
+  --v-btn-shadow-hover: none;
+  --v-btn-padding: 14px 32px;
+  --v-btn-letter-spacing: 0.12em;
+  --v-input-bg: transparent;
+  --v-input-border: 0;
+  --v-input-border-bottom: 2px solid var(--c-ink);
+  --v-input-padding: 8px 0 10px;
+  --v-input-focus-shadow: none;
+  --v-input-focus-border-bottom: 2px solid var(--c-primary);
+  --v-corner-stars: block;
+  --v-avatar-corner-stars: block;
+  --v-title-weight: 700;
+  --v-title-tracking: -0.01em;
+  --v-title-transform: none;
+  --v-body-weight: 400;
+  --v-pulse-bg: var(--c-primary);
+  --v-album-bg: var(--c-bg);
+  --v-paper-grain: radial-gradient(rgba(80, 50, 20, 0.025) 1px, transparent 1px),
+                    radial-gradient(rgba(80, 50, 20, 0.02) 1px, transparent 1px);
+  --v-paper-grain-size: 3px 3px, 7px 7px;
+  --v-paper-grain-position: 0 0, 1px 2px;
+}
+
+/* Sweet Sophomore — bright carnival. */
+[data-theme="sweet-sophomore"] {
+  --v-radius-sm: 12px;
+  --v-radius-md: 14px;
+  --v-radius-pill: 9999px;
+  --v-tile-border: 4px;
+  --v-card-border: 2px;
+  --v-card-inset-stroke: none;
+  --v-card-shadow: 0 4px 0 var(--c-primary-deep);
+  --v-btn-mask: none;
+  --v-btn-mask-composite: source-over;
+  --v-btn-border-width: 0;
+  --v-btn-shadow: 0 4px 0 var(--c-primary-deep);
+  --v-btn-shadow-hover: 0 6px 0 var(--c-primary-deep);
+  --v-btn-padding: 14px 28px;
+  --v-btn-letter-spacing: 0.06em;
+  --v-input-bg: var(--c-surface);
+  --v-input-border: 2px solid var(--c-primary);
+  --v-input-border-bottom: 2px solid var(--c-primary);
+  --v-input-padding: 10px 18px;
+  --v-input-focus-shadow: 0 0 0 3px color-mix(in srgb, var(--c-accent) 70%, transparent);
+  --v-input-focus-border-bottom: 2px solid var(--c-primary-deep);
+  --v-corner-stars: none;
+  --v-avatar-corner-stars: none;
+  --v-title-weight: 400; /* Bagel Fat One only ships weight 400 */
+  --v-title-tracking: 0;
+  --v-title-transform: none;
+  --v-body-weight: 500;
+  --v-pulse-bg: var(--c-joy);
+  --v-album-bg: transparent;
+  --v-paper-grain: repeating-linear-gradient(
+    135deg,
+    transparent 0,
+    transparent 22px,
+    color-mix(in srgb, var(--c-primary) 5%, transparent) 22px,
+    color-mix(in srgb, var(--c-primary) 5%, transparent) 44px
+  );
+  --v-paper-grain-size: auto;
+  --v-paper-grain-position: 0 0;
+}
+
+/* ----- Variant-driven components — read the --v-* properties so they re-skin
+ *       cleanly whenever a wrapping element changes its data-theme. ---------- */
+
+body {
+  background-image: var(--v-paper-grain);
+  background-size: var(--v-paper-grain-size);
+  background-position: var(--v-paper-grain-position);
+  font-weight: var(--v-body-weight);
+}
+
+.h-title {
+  font-weight: var(--v-title-weight);
+  letter-spacing: var(--v-title-tracking);
+  text-transform: var(--v-title-transform);
+}
+
+.btn-ticket {
+  border-radius: var(--v-radius-pill);
+  border-width: var(--v-btn-border-width);
+  padding: var(--v-btn-padding);
+  letter-spacing: var(--v-btn-letter-spacing);
+  -webkit-mask: var(--v-btn-mask);
+          mask: var(--v-btn-mask);
+  -webkit-mask-composite: var(--v-btn-mask-composite);
+          mask-composite: var(--v-btn-mask-composite);
+  box-shadow: var(--v-btn-shadow);
+}
+.btn-ticket:hover {
+  box-shadow: var(--v-btn-shadow-hover);
+}
+
+.field-input {
+  background: var(--v-input-bg);
+  border: var(--v-input-border);
+  border-bottom: var(--v-input-border-bottom);
+  border-radius: var(--v-radius-pill);
+  padding: var(--v-input-padding);
+}
+.field-input:focus {
+  box-shadow: var(--v-input-focus-shadow);
+  border-bottom: var(--v-input-focus-border-bottom);
+}
+.field-textarea {
+  background: var(--v-input-bg);
+  border: var(--v-input-border);
+  border-bottom: var(--v-input-border-bottom);
+  border-radius: var(--v-radius-md);
+}
+.field-textarea:focus {
+  box-shadow: var(--v-input-focus-shadow);
+  border-bottom: var(--v-input-focus-border-bottom);
+}
+
+.deco-card {
+  border-radius: var(--v-radius-md);
+  border-width: var(--v-card-border);
+  box-shadow: var(--v-card-inset-stroke), var(--v-card-shadow);
+}
+.ticket-stub {
+  border-radius: var(--v-radius-md);
+  border-width: var(--v-card-border);
+}
+
+.iy-tile,
+.iy-album button {
+  border-radius: var(--v-radius-md);
+  border-width: var(--v-tile-border);
+}
+.iy-tile::before,
+.iy-tile::after,
+.iy-album button::before,
+.iy-album button::after,
+.iy-tile > .iy-star-bl,
+.iy-tile > .iy-star-br,
+.iy-album button > .iy-star-bl,
+.iy-album button > .iy-star-br {
+  display: var(--v-corner-stars);
+}
+.iy-avatar::before,
+.iy-avatar::after {
+  display: var(--v-avatar-corner-stars);
+}
+
+.iy-album {
+  background: var(--v-album-bg);
+}
+
+.pulse {
+  background: var(--v-pulse-bg);
+}
+.iy-drop-frame {
+  border-radius: var(--v-radius-md);
+}
+.iy-drop-frame::before {
+  border-radius: var(--v-radius-md);
 }

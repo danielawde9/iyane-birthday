@@ -1,6 +1,6 @@
 import { getActiveEvent, listGuestbook } from "@/db/queries";
 import { GuestbookWall } from "@/components/guestbook/GuestbookWall";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+import { PageShell } from "@/components/ui/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -16,14 +16,12 @@ export default async function GuestbookPage() {
     : [];
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12">
-      <header className="mb-10 text-center">
-        <SectionTitle eyebrow="The way a guestbook gathers names" title="The Guestbook" />
-        <p className="mx-auto mt-4 max-w-xl font-display text-lg italic text-ink-soft">
-          Leave a few words for Iyane to find one day.
-        </p>
-      </header>
+    <PageShell
+      eyebrow="The way a guestbook gathers names"
+      title="The Guestbook"
+      lead="Leave a few words for Iyane to find one day."
+    >
       <GuestbookWall initial={entries} />
-    </div>
+    </PageShell>
   );
 }

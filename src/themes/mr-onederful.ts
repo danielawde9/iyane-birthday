@@ -24,6 +24,7 @@ export const mrOnederful: Theme = {
     onDark: "#F6EFE2",
     onSurface: "#0E2240",
     muted: "#6B7691",
+    joy: "#C9A24B",
   },
   copy: {
     tagline: "A Keepsake · Year One",

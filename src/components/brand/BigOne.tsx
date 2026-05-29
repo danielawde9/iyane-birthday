@@ -1,32 +1,36 @@
 import type { SVGProps } from "react";
 
-/** A large gold numeral "1" wearing a bow tie — the compact mark. */
+/**
+ * A wood-type "1" — heavy Arimo on parchment with a 1-point ink rule running
+ * around it and a small gold star at the top, the way a playbill would set
+ * a single-character lockup.
+ */
 export function BigOne(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 130 170" role="img" aria-label="One" {...props}>
-      <defs>
-        <linearGradient id="bigone-gold" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="var(--c-accent-bright)" />
-          <stop offset="0.6" stopColor="var(--c-accent)" />
-          <stop offset="1" stopColor="#a9842f" />
-        </linearGradient>
-      </defs>
+    <svg viewBox="0 0 140 200" role="img" aria-label="One" {...props}>
+      {/* ink rule frame */}
+      <rect x="6" y="6" width="128" height="188" fill="var(--c-paper-deep)" stroke="var(--c-ink)" strokeWidth="3" />
+      <rect x="14" y="14" width="112" height="172" fill="none" stroke="var(--c-ink)" strokeWidth="1" />
+      {/* the numeral */}
       <text
-        x="65"
-        y="155"
+        x="70"
+        y="170"
         textAnchor="middle"
-        fill="url(#bigone-gold)"
+        fill="var(--c-primary)"
+        stroke="var(--c-ink)"
+        strokeWidth="1.5"
         fontSize="180"
-        style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}
+        style={{ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.04em" }}
       >
         1
       </text>
-      {/* bow tie at the collar of the 1 */}
-      <g transform="translate(65 44)" fill="var(--c-ink)">
-        <path d="M0 0 -30 -13 -30 13Z" />
-        <path d="M0 0 30 -13 30 13Z" />
-        <rect x="-5" y="-7" width="10" height="14" rx="3" />
-      </g>
+      {/* gold star at the top */}
+      <polygon
+        points="70,30 74,40 84,40 76,46 79,56 70,50 61,56 64,46 56,40 66,40"
+        fill="var(--c-accent)"
+        stroke="var(--c-ink)"
+        strokeWidth="1"
+      />
     </svg>
   );
 }

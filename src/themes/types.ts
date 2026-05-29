@@ -22,6 +22,7 @@ export interface ThemePalette {
   onDark: string; // text on primary/dark
   onSurface: string; // text on light surfaces (body)
   muted: string; // tertiary text
+  joy: string; // celebratory pop (live pulse, fresh badges)
 }
 
 export interface ThemeCopy {
@@ -33,13 +34,28 @@ export interface ThemeCopy {
   dressCode: string; // suggested dress code
 }
 
-export type DecorationKind = "bowtie";
+export type DecorationKind = "bowtie" | "bigtop";
+
+/**
+ * A theme's typography. Each value is a CSS font-family stack string, usually
+ * referencing the next/font variables loaded at the root layout (e.g.
+ * `var(--font-arimo), Arial Black, sans-serif`). If omitted, the theme inherits
+ * the default Grand Jubilee fonts (Arimo / Libre Caslon Text / Space Mono).
+ */
+export interface ThemeFonts {
+  display: string;
+  body: string;
+  script: string;
+  mono?: string;
+}
 
 export interface Theme {
   slug: string;
   name: string;
   emoji: string;
   palette: ThemePalette;
+  /** Optional font overrides. Falls back to Grand Jubilee fonts if omitted. */
+  fonts?: ThemeFonts;
   copy: ThemeCopy;
   decoration: DecorationKind;
 }

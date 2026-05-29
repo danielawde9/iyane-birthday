@@ -1,0 +1,1 @@
+ALTER TABLE "events" ALTER COLUMN "theme_slug" SET DEFAULT 'big-top';

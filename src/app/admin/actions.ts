@@ -87,7 +87,7 @@ export async function createNextYearAction(formData: FormData) {
   await requireAdmin();
   const year = clampInt(formData.get("year"), 1, 99, 2);
   const title = sanitizeText(formData.get("title"), 120) ?? `Iyane turns ${year}`;
-  const themeSlug = sanitizeText(formData.get("themeSlug"), 60) ?? "mr-onederful";
+  const themeSlug = sanitizeText(formData.get("themeSlug"), 60) ?? "big-top";
   const makeActive = formData.get("makeActive") === "on";
 
   const created = await createEvent({ year, title, themeSlug, isActive: false });

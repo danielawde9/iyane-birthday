@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listEvents, countVisiblePhotos } from "@/db/queries";
 import { getTheme } from "@/themes";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+import { PageShell } from "@/components/ui/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -12,14 +12,11 @@ export default async function ArchivePage() {
   );
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
-      <header className="mb-10 text-center">
-        <SectionTitle eyebrow="Every year, kept" title="Through the Years" />
-        <p className="mx-auto mt-4 max-w-xl font-display text-lg italic text-ink-soft">
-          Every birthday, kept. A new dressing each year — the same growing keepsake.
-        </p>
-      </header>
-
+    <PageShell
+      eyebrow="Every year, kept"
+      title="Through the Years"
+      lead="Every birthday, kept. A new dressing each year — the same growing keepsake."
+    >
       <div className="space-y-4">
         {cards.map(({ event, count, theme }) => (
           <Link
@@ -41,12 +38,12 @@ export default async function ArchivePage() {
               </p>
             </div>
             <div className="text-right">
-              <div className="h-title text-3xl text-accent">{count}</div>
-              <div className="font-sc text-[10px] uppercase tracking-[0.22em] text-muted">photos</div>
+              <div className="h-title text-3xl text-gold-deep">{count}</div>
+              <div className="font-sc text-[10px] uppercase tracking-[0.22em] text-ink-soft">photos</div>
             </div>
           </Link>
         ))}
       </div>
-    </div>
+    </PageShell>
   );
 }

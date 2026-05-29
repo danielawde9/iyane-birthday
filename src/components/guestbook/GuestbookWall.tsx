@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { StarRule } from "@/components/ui/StarRule";
 
 export interface Entry {
   id: string;
@@ -63,18 +64,26 @@ export function GuestbookWall({ initial }: { initial: Entry[] }) {
 
       <div>
         {entries.length === 0 ? (
-          <p className="border border-dashed border-[color:var(--c-gold-rule)] bg-surface p-12 text-center font-display text-lg italic text-muted">
+          <p className="deco-card p-12 text-center font-display text-lg italic text-ink-soft">
             The page is blank — be the first to leave a line.
           </p>
         ) : (
-          <div className="columns-1 gap-4 sm:columns-2 [&>*]:mb-4">
-            {entries.map((entry) => (
-              <article key={entry.id} className="deco-card break-inside-avoid p-6">
-                <p className="whitespace-pre-wrap font-display text-[1.05rem] italic leading-relaxed text-ink">
+          <div className="columns-1 gap-5 sm:columns-2 [&>article]:mb-5">
+            {entries.map((entry, i) => (
+              <article key={entry.id} className="ticket-stub break-inside-avoid">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                    ✎ A Wish
+                  </span>
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ink-soft">
+                    No. {entries.length - i}
+                  </span>
+                </div>
+                <p className="mt-3 whitespace-pre-wrap font-body text-[1.05rem] italic leading-relaxed text-ink">
                   {entry.message}
                 </p>
-                <hr className="rule-gold my-4" />
-                <p className="script text-3xl text-accent">{entry.name}</p>
+                <StarRule className="my-4" />
+                <p className="script text-right text-3xl text-gold-deep">{entry.name}</p>
               </article>
             ))}
           </div>

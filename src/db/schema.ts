@@ -4,7 +4,7 @@ import { pgTable, uuid, text, integer, boolean, timestamp } from "drizzle-orm/pg
 export const events = pgTable("events", {
   id: uuid("id").primaryKey().defaultRandom(),
   year: integer("year").notNull(),
-  themeSlug: text("theme_slug").notNull().default("mr-onederful"),
+  themeSlug: text("theme_slug").notNull().default("big-top"),
   title: text("title").notNull(),
   eventDate: timestamp("event_date", { withTimezone: true }),
   venue: text("venue"),

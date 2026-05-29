@@ -1,56 +1,58 @@
 import type { SVGProps } from "react";
 
 /**
- * The "Iyane keepsake" crest — engraved line-art: a thin gold ring framing a
- * bow-tie whose knot is a monogram medallion. Drawn entirely in antique gold
- * (theme `--c-accent`) so it reads on warm paper and on the dark home alike.
- * Colours come from theme CSS variables, so it re-skins per year.
+ * "The Grand Jubilee" mark — a gold medal: a 5-point gold star, an ink-ringed
+ * medallion centered on it carrying the monogram, and four small ink stars at
+ * 12 / 3 / 6 / 9 o'clock around the rim. Pure SVG, theme-driven.
  */
 export function Crest({
-  title = "Iyane · Year One",
+  title = "Iyane · The Grand Jubilee",
   mono = "I",
   ...props
 }: SVGProps<SVGSVGElement> & { title?: string; mono?: string }) {
   return (
     <svg viewBox="0 0 120 120" role="img" aria-label={title} {...props}>
-      {/* outer frame */}
-      <circle cx="60" cy="60" r="54" fill="none" stroke="var(--c-accent)" strokeWidth="1.1" />
-      <circle cx="60" cy="60" r="49" fill="none" stroke="var(--c-accent)" strokeWidth="0.5" strokeOpacity="0.5" />
-
-      {/* hairline rules + end dots */}
-      <line x1="14" y1="60" x2="30" y2="60" stroke="var(--c-accent)" strokeWidth="0.6" />
-      <line x1="90" y1="60" x2="106" y2="60" stroke="var(--c-accent)" strokeWidth="0.6" />
-      <circle cx="14" cy="60" r="1.1" fill="var(--c-accent)" />
-      <circle cx="106" cy="60" r="1.1" fill="var(--c-accent)" />
-
-      {/* bow-tie wings flanking the medallion */}
-      <path d="M48 60 L28 50 L28 70 Z" fill="none" stroke="var(--c-accent)" strokeWidth="0.9" strokeLinejoin="miter" />
-      <path d="M44 60 L31 54 L31 66" fill="none" stroke="var(--c-accent)" strokeWidth="0.45" strokeOpacity="0.6" />
-      <path d="M72 60 L92 50 L92 70 Z" fill="none" stroke="var(--c-accent)" strokeWidth="0.9" strokeLinejoin="miter" />
-      <path d="M76 60 L89 54 L89 66" fill="none" stroke="var(--c-accent)" strokeWidth="0.45" strokeOpacity="0.6" />
-
-      {/* knot medallion + monogram */}
-      <circle cx="60" cy="60" r="13" fill="none" stroke="var(--c-accent)" strokeWidth="0.9" />
-      <circle cx="60" cy="60" r="10" fill="none" stroke="var(--c-accent)" strokeWidth="0.4" strokeOpacity="0.55" />
+      {/* outer ink ring */}
+      <circle cx="60" cy="60" r="56" fill="var(--c-bg)" stroke="var(--c-ink)" strokeWidth="3" />
+      {/* gold medal star */}
+      <polygon
+        points="60,16 70.6,46 102,46 76.7,64.6 86.4,94 60,76 33.6,94 43.3,64.6 18,46 49.4,46"
+        fill="var(--c-accent)"
+        stroke="var(--c-ink)"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      {/* inner medallion */}
+      <circle cx="60" cy="62" r="14" fill="var(--c-primary)" stroke="var(--c-ink)" strokeWidth="2" />
       <text
         x="60"
-        y="66"
+        y="68"
         textAnchor="middle"
         fill="var(--c-accent)"
-        fontSize="17"
-        style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontWeight: 500 }}
+        fontSize="16"
+        style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}
       >
         {mono}
       </text>
-
-      {/* dots above/below the knot */}
-      <circle cx="60" cy="42" r="0.9" fill="var(--c-accent)" />
-      <circle cx="60" cy="78" r="0.9" fill="var(--c-accent)" />
+      {/* compass-rose ink stars at 12 / 3 / 6 / 9 on the outer ring */}
+      <SmallStar cx={60} cy={4} />
+      <SmallStar cx={116} cy={60} />
+      <SmallStar cx={60} cy={116} />
+      <SmallStar cx={4} cy={60} />
     </svg>
   );
 }
 
-/** Compact, ring-less crest with heavier strokes — for the slideshow watermark. */
+function SmallStar({ cx, cy }: { cx: number; cy: number }) {
+  return (
+    <polygon
+      points={`${cx},${cy - 4} ${cx + 1.2},${cy - 1.2} ${cx + 4},${cy - 1.2} ${cx + 1.7},${cy + 0.5} ${cx + 2.5},${cy + 4} ${cx},${cy + 1.8} ${cx - 2.5},${cy + 4} ${cx - 1.7},${cy + 0.5} ${cx - 4},${cy - 1.2} ${cx - 1.2},${cy - 1.2}`}
+      fill="var(--c-ink)"
+    />
+  );
+}
+
+/** Compact, ring-less badge — for the slideshow watermark. */
 export function CrestSmall({
   title = "Iyane",
   mono = "I",
@@ -58,16 +60,21 @@ export function CrestSmall({
 }: SVGProps<SVGSVGElement> & { title?: string; mono?: string }) {
   return (
     <svg viewBox="0 0 120 80" role="img" aria-label={title} {...props}>
-      <path d="M52 40 L24 26 L24 54 Z" fill="none" stroke="var(--c-accent)" strokeWidth="1.4" strokeLinejoin="miter" />
-      <path d="M68 40 L96 26 L96 54 Z" fill="none" stroke="var(--c-accent)" strokeWidth="1.4" strokeLinejoin="miter" />
-      <circle cx="60" cy="40" r="14" fill="none" stroke="var(--c-accent)" strokeWidth="1.4" />
+      <polygon
+        points="60,8 71,38 100,38 76,56 86,86 60,68 34,86 44,56 20,38 49,38"
+        fill="var(--c-accent)"
+        stroke="var(--c-ink)"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <circle cx="60" cy="48" r="12" fill="var(--c-primary)" stroke="var(--c-ink)" strokeWidth="1.8" />
       <text
         x="60"
-        y="46.5"
+        y="53"
         textAnchor="middle"
         fill="var(--c-accent)"
-        fontSize="17"
-        style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontWeight: 500 }}
+        fontSize="16"
+        style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}
       >
         {mono}
       </text>

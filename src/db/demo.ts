@@ -11,7 +11,7 @@ import type { EventRow, PhotoRow, GuestbookRow } from "./schema";
 export const DEMO_EVENT: EventRow = {
   id: "demo-event-0001-0001-000000000001",
   year: 1,
-  themeSlug: "mr-onederful",
+  themeSlug: "big-top",
   title: "Iyane — Year One",
   eventDate: new Date("2026-07-15T16:00:00"),
   venue: "The Garden Pavilion",

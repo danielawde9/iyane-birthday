@@ -4,16 +4,20 @@ import { cn } from "@/lib/cn";
 
 type Variant = "gold" | "outline" | "outlineNavy" | "navy";
 
-const base =
-  "inline-flex items-center justify-center gap-2.5 rounded-[2px] px-6 py-3 font-sc text-[11.5px] font-medium uppercase tracking-[0.26em] transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+const base = "btn-ticket";
 
-// Keepsake buttons: an outline-gold "Add Yours" (gold), an ink-fill primary
-// (navy), and two ghost variants. All settle to gold or ink on hover.
+// "Grand Jubilee" buttons: raffle-ticket shape (semi-circle side notches via
+// CSS mask). Variant names kept for back-compat with call sites.
+//
+// - gold     → gold-filled (the default / "Add Yours" affordance)
+// - outline  → parchment-filled with ink frame (secondary)
+// - outlineNavy → same outline, used on dark
+// - navy     → ink-filled (primary action on light)
 const variants: Record<Variant, string> = {
-  gold: "bg-transparent text-ink border border-accent hover:bg-accent hover:text-bg",
-  outline: "bg-transparent text-accent border border-accent/70 hover:bg-accent/10",
-  outlineNavy: "bg-transparent text-ink border border-[color:var(--c-rule)] hover:border-accent",
-  navy: "bg-primary text-on-dark border border-primary hover:bg-accent hover:text-ink hover:border-accent",
+  gold: "",
+  outline: "btn-ticket-blue !bg-bg !text-ink",
+  outlineNavy: "btn-ticket-blue !bg-bg !text-ink",
+  navy: "btn-ticket-red",
 };
 
 export function Button({ variant = "gold", className, ...props }: ComponentProps<"button"> & { variant?: Variant }) {

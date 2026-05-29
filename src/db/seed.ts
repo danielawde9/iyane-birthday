@@ -19,7 +19,7 @@ async function main() {
 
   await db.insert(events).values({
     year: 1,
-    themeSlug: "mr-onederful",
+    themeSlug: "big-top",
     title: "Iyane — Year One",
     eventDate: new Date("2026-07-15T16:00:00"),
     venue: "TBD",

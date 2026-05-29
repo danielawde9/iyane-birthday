@@ -48,7 +48,7 @@ export default async function AdminPage() {
           <p className="text-sm text-on-surface/60">Signed in as {admin.email}</p>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <Link href="/" className="text-accent underline-offset-4 hover:underline">View site →</Link>
+          <Link href="/" className="text-gold-deep underline-offset-4 hover:underline">View site →</Link>
           <form action={signOutAction}>
             <button className="rounded-full border border-primary/20 px-4 py-2 hover:bg-primary/5">Sign out</button>
           </form>
@@ -96,7 +96,7 @@ export default async function AdminPage() {
             {events.map((e) => (
               <li key={e.id} className="flex items-center justify-between gap-3 text-sm">
                 <span>
-                  <strong>Year {e.year}</strong> · {e.title} {e.isActive && <span className="text-accent">(active)</span>}
+                  <strong>Year {e.year}</strong> · {e.title} {e.isActive && <span className="text-gold-deep">(active)</span>}
                 </span>
                 {!e.isActive && (
                   <form action={setActiveEventAction}>
@@ -112,7 +112,7 @@ export default async function AdminPage() {
             <Field label="New year #"><input type="number" name="year" min={1} max={99} defaultValue={(event?.year ?? 1) + 1} className={input} /></Field>
             <Field label="Title"><input name="title" placeholder="Iyane turns 2" className={input} /></Field>
             <Field label="Theme">
-              <select name="themeSlug" className={input} defaultValue="mr-onederful">
+              <select name="themeSlug" className={input} defaultValue="big-top">
                 {themes.map((t) => (
                   <option key={t.slug} value={t.slug}>{t.name}</option>
                 ))}
@@ -179,7 +179,7 @@ export default async function AdminPage() {
               <li key={g.id} className={`flex items-start justify-between gap-4 rounded-xl border border-primary/10 p-3 text-sm ${g.status === "hidden" ? "opacity-50" : ""}`}>
                 <div>
                   <p className="text-on-surface">{g.message}</p>
-                  <p className="mt-1 font-script text-xl text-accent">{g.name}</p>
+                  <p className="mt-1 font-script text-xl text-gold-deep">{g.name}</p>
                 </div>
                 <form action={setGuestbookStatusAction}>
                   <input type="hidden" name="id" value={g.id} />
@@ -198,7 +198,7 @@ export default async function AdminPage() {
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="rounded-2xl border border-primary/10 bg-surface p-4 shadow-sm">
-      <div className="font-display text-3xl text-accent">{value}</div>
+      <div className="font-display text-3xl text-gold-deep">{value}</div>
       <div className="text-xs uppercase tracking-wider text-on-surface/60">{label}</div>
       {hint && <div className="text-[11px] text-on-surface/45">{hint}</div>}
     </div>

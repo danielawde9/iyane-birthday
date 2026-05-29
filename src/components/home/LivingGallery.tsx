@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import QRCode from "qrcode";
 import type { PhotoDTO } from "@/lib/photo";
-import { Crest } from "@/components/brand/Crest";
+import { CrestSmall } from "@/components/brand/Crest";
 import { PhotoStage } from "@/components/media/PhotoStage";
 import { PhotoControls } from "@/components/media/PhotoControls";
 import { useRotation } from "@/lib/useRotation";
@@ -12,18 +12,21 @@ import { useRotation } from "@/lib/useRotation";
 const INTERVAL = 6500;
 
 /**
- * The home page: a full-bleed wall of guest photos shown WHOLE (never cropped)
- * over a blurred backdrop, with play/pause + next/prev controls and elegant gold
- * overlays. Auto-refreshes for new uploads.
+ * The home hero: a full-bleed wall of guest photos shown WHOLE (never cropped)
+ * over a blurred backdrop, with the "Grand Jubilee" ink + gold corner stamps,
+ * an "Admit One" QR ticket, and a Caslon photo credit along the bottom.
+ *
+ * It renders INSIDE the shared (site) chrome — the SiteHeader sits above it and
+ * the SiteFooter below — so the home page carries the same header, nav, and
+ * footer as every other page. It fills the viewport below the header and
+ * auto-refreshes as new photos arrive.
  */
 export function LivingGallery({
   photos: initial,
   guestCount,
-  yearLabel,
 }: {
   photos: PhotoDTO[];
   guestCount: number;
-  yearLabel: string;
 }) {
   const [photos, setPhotos] = useState<PhotoDTO[]>(initial);
   const [qr, setQr] = useState<string | null>(null);
@@ -31,7 +34,7 @@ export function LivingGallery({
 
   useEffect(() => {
     const url = `${window.location.origin}/upload`;
-    QRCode.toDataURL(url, { margin: 1, width: 220, color: { dark: "#15233b", light: "#f4ecd8" } })
+    QRCode.toDataURL(url, { margin: 1, width: 220, color: { dark: "#221B03", light: "#FFF8F0" } })
       .then(setQr)
       .catch(() => setQr(null));
   }, []);
@@ -51,21 +54,24 @@ export function LivingGallery({
 
   const hasPhotos = photos.length > 0;
   const current = hasPhotos ? photos[index % photos.length]! : null;
-  const shadow = "drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]";
+  const shadow = "drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]";
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-primary-deep text-on-dark">
+    // Full-bleed hero that fills the screen below the shared SiteHeader. The
+    // negative top margin cancels the header's bottom gap so the slideshow butts
+    // flush against the red marquee.
+    <section className="relative -mt-6 w-full overflow-hidden bg-projector-deep text-on-dark min-h-[calc(100svh-78px)] sm:min-h-[calc(100svh-88px)]">
       {/* Uncropped photo + blurred backdrop */}
       {hasPhotos ? (
         <PhotoStage photo={current} />
       ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,#1c2f4f,#0c1626_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,#7a1a1f,#410003_70%)]" />
       )}
 
-      {/* Vignette for legibility */}
-      <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/55 via-transparent to-black/70" />
+      {/* Soft vignette */}
+      <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
 
-      {/* Controls */}
+      {/* Controls (centered) */}
       {photos.length > 1 && (
         <PhotoControls
           isPlaying={isPlaying}
@@ -77,65 +83,67 @@ export function LivingGallery({
         />
       )}
 
-      {/* Top-left: mark + nav */}
-      <div className={`absolute left-5 top-5 z-20 flex flex-col gap-2 sm:left-8 sm:top-7 ${shadow}`}>
-        <Link href="/gallery" className="flex items-center gap-3">
-          <Crest className="h-10 w-10 sm:h-12 sm:w-12" />
-          <span className="leading-tight">
-            <span className="block font-display text-xl tracking-[0.3em] text-accent sm:text-2xl">IYANE</span>
-            <span className="block font-script text-lg text-accent/90 sm:text-xl">{yearLabel}</span>
+      {/* Floating right-side ADMIT ONE QR — desktop only */}
+      <div className="absolute bottom-20 right-8 z-20 hidden items-end gap-4 lg:flex">
+        <Link href="/upload" className={`text-right ${shadow}`}>
+          <span className="block font-display text-3xl font-bold uppercase tracking-[0.08em] text-accent">
+            Add Your Photos
+          </span>
+          <span className="block font-mono text-xs font-bold uppercase tracking-[0.22em] text-on-dark/85">
+            Scan to upload
           </span>
         </Link>
-        <nav className="flex items-center gap-3 text-[10px] uppercase tracking-[0.25em] text-on-dark/75">
-          <Link href="/gallery" className="hover:text-accent">Gallery</Link>
-          <span className="text-accent/50">·</span>
-          <Link href="/guestbook" className="hover:text-accent">Wishes</Link>
-          <span className="text-accent/50">·</span>
-          <Link href="/details" className="hover:text-accent">Details</Link>
-        </nav>
-      </div>
-
-      {/* Top-right: live guest count */}
-      {hasPhotos && guestCount > 0 && (
-        <p className={`absolute right-5 top-6 z-20 max-w-[42%] text-right font-display text-sm italic text-accent/90 sm:right-8 sm:text-base ${shadow}`}>
-          now showing photos from {guestCount} guest{guestCount === 1 ? "" : "s"}
-        </p>
-      )}
-
-      {/* Bottom-left: photo credit */}
-      {current?.uploaderName && (
-        <p className={`absolute bottom-6 left-5 z-20 font-display text-sm italic text-on-dark/90 sm:bottom-8 sm:left-8 sm:text-base ${shadow}`}>
-          Photo by {current.uploaderName}
-        </p>
-      )}
-
-      {/* Bottom-right: add your photos + QR */}
-      <div className="absolute bottom-5 right-5 z-20 flex items-center gap-3 sm:bottom-8 sm:right-8 sm:gap-4">
-        <Link href="/upload" className={`text-right ${shadow}`}>
-          <span className="block font-display text-xl text-accent sm:text-2xl">Add your photos</span>
-          <span className="block font-display text-xs italic text-on-dark/80 sm:text-sm">scan to upload</span>
-        </Link>
         {qr && (
-          <Link href="/upload" aria-label="Add your photos" className="shrink-0 rounded-[3px] bg-[#f4ecd8] p-1.5 shadow-lg ring-1 ring-black/10">
+          <Link
+            href="/upload"
+            aria-label="Add your photos"
+            className="ticket-stub relative -rotate-3 transition-transform hover:rotate-0"
+            style={{ padding: "10px", background: "var(--c-bg)" }}
+          >
+            <span className="admit-stamp absolute -left-3 -top-3">Admit One</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qr} alt="QR code to upload photos" className="h-16 w-16 sm:h-20 sm:w-20" />
+            <img src={qr} alt="QR code to upload photos" className="h-20 w-20" />
           </Link>
         )}
       </div>
 
+      {/* Floating left-side mark — desktop only */}
+      <div className={`absolute bottom-20 left-8 z-20 hidden items-center gap-3 lg:flex ${shadow}`}>
+        <CrestSmall className="h-12 w-20 text-accent" />
+        <span className="font-body text-lg italic text-on-dark/85">The Grand Jubilee</span>
+      </div>
+
+      {/* Bottom caption: photo credit on the left, guest count on the right.
+          A simple gradient bar — NOT a second footer (the SiteFooter renders below). */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
+        <div className="pointer-events-auto mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pb-5 pt-16 sm:px-8">
+          <p className={`min-w-0 truncate font-body text-sm italic text-on-dark/90 sm:text-base ${shadow}`}>
+            {current?.uploaderName ? (
+              <>Photo by <span className="font-bold not-italic text-accent">{current.uploaderName}</span></>
+            ) : (
+              <>An evening under the big top</>
+            )}
+          </p>
+          {hasPhotos && guestCount > 0 && (
+            <p className={`shrink-0 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-on-dark sm:text-sm sm:tracking-[0.2em] ${shadow}`}>
+              <span className="text-accent">★</span> {guestCount} guest{guestCount === 1 ? "" : "s"}
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* Empty state */}
       {!hasPhotos && (
-        <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 px-6 text-center ${shadow}`}>
-          <Crest className="h-24 w-24" />
-          <p className="font-script text-3xl text-accent/90 sm:text-4xl">The album is waiting for its first photo</p>
-          <Link
-            href="/upload"
-            className="mt-1 rounded-[3px] bg-accent px-6 py-3 text-xs uppercase tracking-[0.22em] text-primary-deep transition hover:bg-accent-bright"
-          >
-            Add your photos
+        <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center gap-6 px-6 text-center ${shadow}`}>
+          <CrestSmall className="h-20 w-32" />
+          <p className="font-body text-3xl italic text-accent sm:text-4xl">
+            The big top is empty — be the first under the lights
+          </p>
+          <Link href="/upload" className="btn-ticket">
+            Add Your Photos
           </Link>
         </div>
       )}
-    </div>
+    </section>
   );
 }
