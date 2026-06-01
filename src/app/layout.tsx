@@ -3,6 +3,8 @@ import { Arimo, Libre_Caslon_Text, Space_Mono, Bagel_Fat_One, Quicksand, Caveat 
 import "./globals.css";
 import { getActiveTheme } from "@/lib/active-theme";
 import { themeToCssVars } from "@/themes";
+import { MusicPlayerProvider } from "@/components/site/MusicPlayerProvider";
+import { MusicToggle } from "@/components/site/MusicToggle";
 
 // Default Grand Jubilee fonts.
 const arimo = Arimo({
@@ -69,7 +71,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       style={themeVars}
       data-theme={theme.slug}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <MusicPlayerProvider src="/audio/grand-jubilee.mp3">
+          {children}
+          <MusicToggle />
+        </MusicPlayerProvider>
+      </body>
     </html>
   );
 }

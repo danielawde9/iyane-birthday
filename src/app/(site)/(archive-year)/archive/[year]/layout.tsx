@@ -3,7 +3,6 @@ import { listEvents } from "@/db/queries";
 import { getArchiveYearThemeShell } from "@/lib/year-theme-shell";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
-import { MusicToggle } from "@/components/site/MusicToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +26,6 @@ export default async function ArchiveYearLayout({
       <SiteHeader chrome={shell.chrome} />
       <main className="flex-1">{children}</main>
       <SiteFooter chrome={shell.chrome} />
-      <MusicToggle />
     </div>
   );
 }

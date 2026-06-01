@@ -12,15 +12,10 @@ import QRCode from "qrcode";
  */
 export function QrPoster() {
   const [qr, setQr] = useState<string | null>(null);
-  const [url, setUrl] = useState("");
 
   useEffect(() => {
-    const uploadUrl = `${window.location.origin}/upload`;
-    QRCode.toDataURL(uploadUrl, { margin: 1, width: 560, color: { dark: "#221B03", light: "#FFF8F0" } })
-      .then((dataUrl) => {
-        setUrl(uploadUrl);
-        setQr(dataUrl);
-      })
+    QRCode.toDataURL(`${window.location.origin}/upload`, { margin: 1, width: 560, color: { dark: "#221B03", light: "#FFF8F0" } })
+      .then(setQr)
       .catch(() => setQr(null));
   }, []);
 
@@ -80,7 +75,7 @@ export function QrPoster() {
           <h1
             className="mt-4 font-display font-bold uppercase leading-none text-primary"
             style={{
-              fontSize: "clamp(56px, 13vw, 136px)",
+              fontSize: "clamp(44px, 12vw, 136px)",
               letterSpacing: "-0.02em",
               textShadow: "3px 3px 0 var(--c-ink)",
             }}
@@ -88,12 +83,12 @@ export function QrPoster() {
             IYANE
           </h1>
 
-          <p className="mt-4 font-body text-2xl italic text-ink sm:text-4xl">
+          <p className="mt-3 font-body text-xl italic text-ink sm:text-4xl">
             the one &amp; only
           </p>
 
           {/* Folded ribbon billing the year */}
-          <div className="relative mt-5 w-80">
+          <div className="relative mt-5 w-full max-w-[320px] sm:w-80">
             <svg viewBox="0 0 320 56" preserveAspectRatio="none" className="h-12 w-full" aria-hidden="true">
               <polygon points="0,8 16,28 0,48 8,28" fill="var(--c-primary-deep)" />
               <polygon points="320,8 304,28 320,48 312,28" fill="var(--c-primary-deep)" />
@@ -101,7 +96,7 @@ export function QrPoster() {
               <polygon points="16,12 304,12 296,28 304,44 16,44 24,28" fill="none" stroke="var(--c-accent)" strokeWidth="1" opacity="0.85" />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-on-dark">
+              <span className="whitespace-nowrap font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-on-dark sm:text-sm sm:tracking-[0.2em]">
                 The Grand Jubilee · MMXXVI
               </span>
             </div>
@@ -124,8 +119,8 @@ export function QrPoster() {
 
           {/* QR ticket stub */}
           <div className="relative mt-7 flex items-center justify-center">
-            <div className="ticket-stub relative -rotate-2 bg-bg p-3 print:bg-white">
-              <span className="admit-stamp absolute -left-4 -top-4">Admit One</span>
+            <div className="ticket-stub relative bg-bg p-3 sm:-rotate-2 print:bg-white">
+              <span className="admit-stamp absolute -top-3 left-1 sm:-left-4 sm:-top-4">Admit One</span>
               {qr ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={qr} alt="QR code to the photo upload page" className="h-40 w-40 sm:h-56 sm:w-56" />
@@ -139,10 +134,6 @@ export function QrPoster() {
               </p>
             </div>
           </div>
-
-          <p className="mt-6 break-all font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-            {url || "iyane.show/upload"}
-          </p>
         </div>
 
         {/* bottom scalloped strip (above the bottom banner in flow) */}

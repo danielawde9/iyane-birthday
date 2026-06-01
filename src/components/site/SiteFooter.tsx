@@ -18,8 +18,9 @@ export function SiteFooter({ chrome }: { chrome?: SiteChrome }) {
       : [
           { href: "/", label: "Home" },
           { href: "/gallery", label: "Gallery" },
+          { href: "/guestbook", label: "Wishes" },
+          { href: "/details", label: "Details" },
           { href: "/upload", label: "Add Photos" },
-          { href: "/guestbook", label: "Guestbook" },
           { href: "/poster", label: "Poster" },
           { href: "/archive", label: "Archive" },
         ];
