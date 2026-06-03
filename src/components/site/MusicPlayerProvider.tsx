@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { loadMusicPref, saveMusicPref, shouldAutoplayOnLoad } from "@/lib/music-prefs";
+import { saveMusicPref } from "@/lib/music-prefs";
 
 const TARGET_VOLUME = 0.35;
 const FADE_MS = 600;
@@ -35,8 +35,6 @@ function fade(audio: HTMLAudioElement, to: number, ms: number, done?: () => void
 export function MusicPlayerProvider({ src, children }: { src: string; children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const cancelFadeRef = useRef<(() => void) | null>(null);
-  // Removes the "start on first interaction" listeners armed when autoplay is blocked.
-  const disarmRef = useRef<(() => void) | null>(null);
   // True while an audio.play() is in flight, so overlapping triggers don't double-start.
   const startPendingRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -46,16 +44,10 @@ export function MusicPlayerProvider({ src, children }: { src: string; children: 
     cancelFadeRef.current = null;
   }
 
-  function disarm() {
-    disarmRef.current?.();
-    disarmRef.current = null;
-  }
-
-  /** Start playback with a fade-in. `onBlocked` fires if the browser rejects play(). */
-  function startPlayback(onBlocked?: () => void) {
+  /** Start playback with a fade-in. Only ever called from a user gesture (the toggle). */
+  function startPlayback() {
     const audio = audioRef.current;
     if (!audio || startPendingRef.current) return;
-    disarm();
     cancelFade();
     startPendingRef.current = true;
     audio.volume = 0;
@@ -69,7 +61,6 @@ export function MusicPlayerProvider({ src, children }: { src: string; children: 
       .catch(() => {
         startPendingRef.current = false;
         setIsPlaying(false);
-        onBlocked?.();
       });
   }
 
@@ -91,35 +82,13 @@ export function MusicPlayerProvider({ src, children }: { src: string; children: 
     }
   }
 
-  // On mount: try to autoplay unless the user previously chose "off".
-  // If the browser blocks audible autoplay, start on the first real user gesture.
-  useEffect(() => {
-    if (!shouldAutoplayOnLoad(loadMusicPref(window.localStorage))) return;
-
-    startPlayback(() => {
-      const resume = () => {
-        disarm();
-        startPlayback();
-      };
-      const opts: AddEventListenerOptions = { passive: true };
-      window.addEventListener("pointerdown", resume, opts);
-      window.addEventListener("keydown", resume, opts);
-      disarmRef.current = () => {
-        window.removeEventListener("pointerdown", resume);
-        window.removeEventListener("keydown", resume);
-      };
-    });
-
-    return () => {
-      disarm();
-      cancelFade();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Music stays off by default — it only starts when the listener clicks the toggle.
+  // No autoplay, no "start on first interaction". Just cancel any in-flight fade on unmount.
+  useEffect(() => cancelFade, []);
 
   return (
     <MusicContext.Provider value={{ isPlaying, toggle }}>
-      <audio ref={audioRef} src={src} loop preload="auto" aria-hidden="true" />
+      <audio ref={audioRef} src={src} loop preload="none" aria-hidden="true" />
       {children}
     </MusicContext.Provider>
   );
