@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { cookies, headers } from "next/headers";
-import { verifyUploadToken } from "@/lib/pin";
+import { headers } from "next/headers";
 import { validateUpload, extensionFor } from "@/lib/files";
-import { env, isStorageConfigured } from "@/lib/env";
-import { UPLOAD_COOKIE, isPinRequired } from "@/lib/upload-auth";
+import { isStorageConfigured } from "@/lib/env";
+import { isUploadGeoAllowed } from "@/lib/upload-auth";
 import { getClientIp } from "@/lib/request";
 import { uploadLimiter } from "@/lib/ratelimit-instance";
 import { getActiveEvent, insertPhoto } from "@/db/queries";
@@ -14,17 +13,17 @@ import { sanitizeText, clampInt } from "@/lib/sanitize";
 export async function POST(request: Request) {
   const h = await headers();
 
-  // 1) Signed PIN cookie (only when a party code is configured).
-  //    Lebanon-only access is enforced by Cloudflare in front of the app.
-  if (isPinRequired()) {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(UPLOAD_COOKIE)?.value;
-    if (!(await verifyUploadToken(token, env.cookieSigningKey))) {
-      return NextResponse.json({ error: "Please enter the party code first.", code: "locked" }, { status: 401 });
-    }
+  // 1) Geo-gate: viewing is open to all, but uploads are Lebanon-only
+  //    (UPLOAD_ALLOWED_COUNTRY). Authoritatively enforced by a Cloudflare WAF
+  //    rule on this route; this cf-ipcountry check is a cheap in-app backstop.
+  if (!isUploadGeoAllowed(h)) {
+    return NextResponse.json(
+      { error: "Photo uploads are open to guests celebrating in Lebanon 💛", code: "geo_locked" },
+      { status: 403 },
+    );
   }
 
-  // 3) Rate limit per IP.
+  // 2) Rate limit per IP.
   const limit = uploadLimiter.check(getClientIp(h));
   if (!limit.allowed) {
     return NextResponse.json(
@@ -45,8 +44,11 @@ export async function POST(request: Request) {
   const check = validateUpload({ size: image.size, bytes });
   if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
 
-  const thumbBytes = thumb instanceof File ? new Uint8Array(await thumb.arrayBuffer()) : bytes;
-  const thumbCheck = validateUpload({ size: thumbBytes.byteLength, bytes: thumbBytes });
+  // A bad or missing thumb falls back to the validated full image — we never store
+  // bytes that failed magic-byte validation, even under an image content-type.
+  const rawThumb = thumb instanceof File ? new Uint8Array(await thumb.arrayBuffer()) : bytes;
+  const thumbCheck = validateUpload({ size: rawThumb.byteLength, bytes: rawThumb });
+  const thumbBytes = thumbCheck.ok ? rawThumb : bytes;
   const thumbMime = thumbCheck.ok ? thumbCheck.mime : check.mime;
 
   const width = clampInt(form.get("width"), 1, 20000, 1200);
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
   const event = await getActiveEvent();
   if (!event) return NextResponse.json({ error: "There's no active celebration yet." }, { status: 400 });
 
-  // 5) Store the bytes (Supabase Storage, or an in-memory data URI in demo mode).
+  // 5) Store the bytes (Supabase Storage, or an inline data URI if storage isn't configured).
   let storageKey: string;
   let thumbKey: string;
   if (isStorageConfigured) {

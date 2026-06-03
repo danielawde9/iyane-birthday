@@ -2,37 +2,40 @@
 
 A shareable photo-album site for a child's birthday: an immersive, full-bleed guest
 photo gallery plus a guestbook. Built to be **reused every year** with a new theme
-while **keeping every year's photos forever**. Photo uploads are limited to guests
-**in Lebanon** (enforced by Cloudflare in front); a party code is optional.
+while **keeping every year's photos forever**. The gallery is open to view from
+anywhere; **photo uploads are limited to guests in Lebanon** (detected via Cloudflare).
 
 **Year 1 theme:** _Mr. ONEderful_ — dapper bow-tie, navy + gold.
 
 - **Framework:** Next.js 16 (App Router) on **Vercel**
 - **Data + Storage + Auth:** **Supabase** (Postgres via Drizzle, Storage, Auth)
-- **Access:** Lebanon-only uploads enforced by **Cloudflare** in front; party code optional
+- **Access:** view from anywhere; **uploads Lebanon-only** (via **Cloudflare** `cf-ipcountry`)
 - **Gallery:** `react-photo-album` (masonry) + `yet-another-react-lightbox`
 
 ---
 
-## Quick start (demo mode)
+## Quick start
 
-No accounts needed — runs on seeded demo content:
+The app **requires a database** (`DATABASE_URL`) — see [Setup](#setup) for a local Supabase.
 
 ```bash
 npm install
-npm run dev          # http://localhost:3000
+# set DATABASE_URL (+ Supabase keys) in .env.local, then:
+npm run db:push && npm run db:seed   # create tables + the Year-1 event
+npm run dev                          # http://localhost:3000
 ```
 
-- Home (living gallery), gallery, slideshow, guestbook, archive all work on seeded photos.
-- **Share Photos** → with no `UPLOAD_PIN` set, uploads need no code (the geo-gate is
-  bypassed locally). Demo uploads are kept in memory for the session.
-- **/admin** is open locally (auth is bypassed until Supabase is configured).
+- Home (living gallery), gallery, slideshow, guestbook, archive run on your seeded data.
+- **Share Photos** → uploads are Lebanon-only; the geo check is bypassed locally
+  (`UPLOAD_GEO_BYPASS` defaults ON in dev), so the uploader shows.
+- **/admin** is open locally (auth is bypassed until Supabase is configured, and **never** in
+  production).
 
 Other scripts:
 
 ```bash
-npm test             # unit tests (PIN signing, rate limit, file validation)
-npm run build        # production build
+npm test             # unit tests (rate limit, file validation, geo gate)
+npm run build        # production build (needs DATABASE_URL)
 npm run lint
 ```
 
@@ -44,7 +47,7 @@ npm run lint
 |-------|------|
 | `/` | Living gallery — full-bleed rotating guest photos, live guest count, scan-to-upload QR |
 | `/gallery` | Masonry gallery + lightbox, featured spotlight, by-contributor filtering |
-| `/upload` | Guest upload (Lebanon-gated, optional code), client-side HEIC convert + compress |
+| `/upload` | Guest upload (Lebanon-only), client-side HEIC convert + compress |
 | `/slideshow` | Full-screen auto-advancing wall to project at the venue |
 | `/guestbook` | Wishes wall + form |
 | `/poster` | Printable QR poster → opens the upload page |
@@ -75,10 +78,10 @@ npm run lint
 
 Copy `.env.example` → `.env.local` and fill it in. Key ones:
 
-- `UPLOAD_PIN` — **optional** party code; leave empty to allow any Lebanon guest to upload with no code
-- `COOKIE_SIGNING_KEY` — a long random string
+- `DATABASE_URL` — **required**; the app won't run without it
+- `UPLOAD_ALLOWED_COUNTRY` — country allowed to upload (default `LB`)
 - `ADMIN_EMAILS` — who can reach `/admin`
-- `UPLOAD_GEO_BYPASS=0` and `ADMIN_DEV_BYPASS=0` in production
+- `ADMIN_DEV_BYPASS=0` and `UPLOAD_GEO_BYPASS=0` in production
 - `NEXT_PUBLIC_SITE_URL` — your final URL (used by the OG image + QR poster)
 
 ### 3. Deploy to Vercel
@@ -93,16 +96,23 @@ Copy `.env.example` → `.env.local` and fill it in. Key ones:
 
 ## How the Lebanon-only upload gate works
 
-1. **Vercel edge** adds `x-vercel-ip-country`. The proxy (`src/proxy.ts`) blocks
-   `POST /api/upload` from outside `UPLOAD_ALLOWED_COUNTRY` and tells the upload page
-   to show a friendly "guests in Lebanon" message.
-2. The **upload route re-checks** the country (authoritative), rate-limits per IP, and
-   validates the image by magic bytes + size. A **party code is optional** — if you set
-   `UPLOAD_PIN`, guests must enter it (a valid signed cookie is then required too).
-3. Test from outside Lebanon with a VPN — uploads should return `403`. Locally there's
-   no geo header, so set `UPLOAD_GEO_BYPASS=1` (the default in dev) to test the flow.
-4. _Optional:_ add a Cloudflare/Vercel WAF rule allowing only `LB` on `/api/upload`
-   for defense-in-depth.
+Anyone can **view** the site from anywhere. Only **uploading** is restricted to Lebanon.
+
+1. **Cloudflare WAF rule** (the authoritative gate): on `POST /api/upload`, block when
+   `ip.geoip.country ne "LB"`. Viewing stays open; uploads are blocked at the edge for non-LB.
+2. **Cloudflare** also adds `cf-ipcountry`. The upload page (`/upload`) reads it: guests in
+   `UPLOAD_ALLOWED_COUNTRY` (default `LB`) see the uploader; everyone else sees a friendly
+   "uploads are for our Lebanon guests" note. `/api/upload` re-checks it as a cheap backstop
+   (`403 geo_locked`), then applies per-IP rate limit + magic-byte image validation.
+3. Locally there's no `cf-ipcountry` header, so `UPLOAD_GEO_BYPASS=1` (the default in dev)
+   skips the check. Test with
+   `curl -i -H "cf-ipcountry: US" -F image=@photo.jpg localhost:3000/api/upload` (expect `403`)
+   vs `-H "cf-ipcountry: LB"`.
+
+> **Cloudflare setup (production):** proxy the domain through Cloudflare (orange cloud) with
+> **IP Geolocation enabled** so `cf-ipcountry` reaches the origin, add the WAF rule above, and
+> set `UPLOAD_GEO_BYPASS=0`. To also stop the rare direct-to-origin hit, enable **Vercel
+> Deployment Protection** so the `*.vercel.app` URL can't be reached without going through Cloudflare.
 
 ---
 

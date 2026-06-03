@@ -11,11 +11,7 @@ import { DEMO_EVENT, DEMO_PHOTOS } from "./demo";
  */
 
 async function main() {
-  const db = getDb();
-  if (!db) {
-    console.error("✗ DATABASE_URL is not set.");
-    process.exit(1);
-  }
+  const db = getDb(); // throws if DATABASE_URL is not set
   const [event] = await db.select().from(events).where(eq(events.isActive, true)).limit(1);
   if (!event) {
     console.error("✗ No active event — run `npm run db:seed` first.");

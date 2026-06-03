@@ -3,13 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import QRCode from "qrcode";
-import { Button } from "@/components/ui/Button";
 import { CrestSmall } from "@/components/brand/Crest";
 import { cn } from "@/lib/cn";
 import { mapWithConcurrency } from "@/lib/concurrency";
 import { loadUploaderName, saveUploaderName, clearUploaderName } from "@/lib/uploader-name";
-
-type Stage = "locked" | "ready";
 
 interface Item {
   id: string;
@@ -57,12 +54,7 @@ async function prepareImage(file: File): Promise<{ full: File; thumb: File; widt
   };
 }
 
-export function Uploader({ requirePin }: { requirePin: boolean }) {
-  const [stage, setStage] = useState<Stage>(requirePin ? "locked" : "ready");
-  const [pin, setPin] = useState("");
-  const [unlocking, setUnlocking] = useState(false);
-  const [lockError, setLockError] = useState<string | null>(null);
-
+export function Uploader() {
   const [name, setName] = useState("");
   const [remembered, setRemembered] = useState(false);
   const [caption, setCaption] = useState("");
@@ -95,26 +87,6 @@ export function Uploader({ requirePin }: { requirePin: boolean }) {
       .then(setQr)
       .catch(() => setQr(null));
   }, []);
-
-  async function unlock(e: React.FormEvent) {
-    e.preventDefault();
-    setUnlocking(true);
-    setLockError(null);
-    try {
-      const res = await fetch("/api/unlock", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? "Couldn't unlock uploads.");
-      setStage("ready");
-    } catch (err) {
-      setLockError(err instanceof Error ? err.message : "Couldn't unlock uploads.");
-    } finally {
-      setUnlocking(false);
-    }
-  }
 
   function updateItem(id: string, patch: Partial<Item>) {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
@@ -152,7 +124,6 @@ export function Uploader({ requirePin }: { requirePin: boolean }) {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        if (data.code === "locked") setStage("locked");
         throw new Error(data.error ?? "Upload failed.");
       }
       updateItem(it.id, { status: "done" });
@@ -177,29 +148,6 @@ export function Uploader({ requirePin }: { requirePin: boolean }) {
     if (fileRef.current) fileRef.current.value = "";
     setItems((prev) => [...fresh, ...prev]);
     await mapWithConcurrency(fresh, 3, (it) => processAndUpload(it));
-  }
-
-  if (stage === "locked") {
-    return (
-      <form onSubmit={unlock} className="deco-card mx-auto max-w-md p-9 text-center">
-        <CrestSmall className="mx-auto h-10 w-16" />
-        <p className="eyebrow mt-4">By invitation</p>
-        <h2 className="h-title mt-2 text-3xl text-ink">Enter the party code</h2>
-        <p className="mt-3 font-display text-ink-soft">Ask the host for the code to begin adding photographs.</p>
-        <input
-          value={pin}
-          onChange={(e) => setPin(e.target.value)}
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder="••••"
-          className="mt-7 w-full border-0 border-b border-ink bg-transparent pb-2 text-center text-2xl tracking-[0.5em] text-ink outline-none transition focus:border-accent"
-        />
-        {lockError && <p className="mt-3 text-sm text-red-800">{lockError}</p>}
-        <Button type="submit" variant="navy" disabled={unlocking || pin.length === 0} className="mt-7 w-full">
-          {unlocking ? "Checking…" : "Unlock"}
-        </Button>
-      </form>
-    );
   }
 
   return (

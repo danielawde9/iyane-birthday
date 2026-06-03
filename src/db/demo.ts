@@ -1,11 +1,11 @@
 import type { EventRow, PhotoRow, GuestbookRow } from "./schema";
 
 /**
- * Seeded content used when no database is configured, so the site is fully
- * browsable (and verifiable) before Supabase is wired up. The demo photos are
- * free-license stock photography bundled under /public/demo (STAND-IN images,
- * not real event photos). Dimensions below are the real measured pixel sizes
- * of each full JPEG — keep them in sync with scripts/fetch-demo-photos.ts.
+ * Seed fixtures used ONLY by the `db:seed` / `db:seed-photos` scripts to bootstrap a
+ * fresh database (the app itself always requires a real DB — there is no demo fallback).
+ * The demo photos are free-license stock photography bundled under /public/demo (STAND-IN
+ * images, not real event photos). Dimensions below are the real measured pixel sizes of
+ * each full JPEG — keep them in sync with scripts/fetch-demo-photos.ts.
  */
 
 export const DEMO_EVENT: EventRow = {

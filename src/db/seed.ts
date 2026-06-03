@@ -10,11 +10,7 @@ function isLocalDatabase(url = ""): boolean {
 }
 
 async function main() {
-  const db = getDb();
-  if (!db) {
-    console.error("✗ DATABASE_URL is not set — nothing to seed. (The app runs in demo mode without it.)");
-    process.exit(1);
-  }
+  const db = getDb(); // throws if DATABASE_URL is not set
 
   const includeLocalTestYears =
     process.env.SEED_LOCAL_TEST_YEARS === "1" ||
