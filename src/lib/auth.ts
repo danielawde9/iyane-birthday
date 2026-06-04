@@ -1,19 +1,18 @@
-import { env, isSupabaseConfigured } from "./env";
+import { env } from "./env";
 import { createSupabaseServerClient } from "./supabase/server";
 
 /**
  * Admin identity. In production this is a Supabase Auth session whose email is in
- * ADMIN_EMAILS. Locally (no Supabase configured) admin is open so the dashboard can be
- * previewed — set ADMIN_DEV_BYPASS=0 to force real auth. The bypass can NEVER be active
- * in production (gated by !isProd), even if ADMIN_DEV_BYPASS=1 is left set by mistake.
+ * ADMIN_EMAILS. For local development the dashboard can be previewed without auth ONLY
+ * by explicitly setting ADMIN_DEV_BYPASS=1. It is gated by !isProd, so it can NEVER be
+ * active in production — or on any Vercel deployment, which runs NODE_ENV=production —
+ * even if the var is left set by mistake. There is no implicit open-by-default: with no
+ * ADMIN_DEV_BYPASS=1, admin always requires a real allow-listed Supabase session.
  */
-export const isAdminBypass =
-  !env.isProd &&
-  (process.env.ADMIN_DEV_BYPASS === "1" ||
-    (!isSupabaseConfigured && process.env.ADMIN_DEV_BYPASS !== "0"));
+export const isAdminBypass = !env.isProd && process.env.ADMIN_DEV_BYPASS === "1";
 
 if (isAdminBypass) {
-  console.warn("⚠️  Admin auth is BYPASSED (dev only). Set ADMIN_DEV_BYPASS=0 to require real login.");
+  console.warn("⚠️  Admin auth is BYPASSED (dev only). Unset ADMIN_DEV_BYPASS to require real login.");
 }
 
 export interface AdminUser {

@@ -14,7 +14,8 @@
     "db:push": "drizzle-kit push",
     "db:bucket": "tsx scripts/create-bucket.ts",
     "db:seed": "tsx src/db/seed.ts",
-    "db:seed-photos": "tsx src/db/seed-photos.ts"
+    "db:seed-photos": "tsx src/db/seed-photos.ts",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

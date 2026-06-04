@@ -1,8 +1,9 @@
--- Row Level Security policies (defense-in-depth).
+-- Row Level Security policies.
 --
--- The app performs all writes with the Supabase service role and reads over a
--- direct Postgres connection (Drizzle); both bypass RLS. These policies harden
--- what the public anon key can do if it is ever used directly.
+-- These are now the LIVE read boundary, not just defense-in-depth: the app reads
+-- public data through the anon key (supabase-js), so these SELECT policies are
+-- what the public is actually allowed to see. Writes and privileged reads (admin
+-- / hidden rows) go through the Supabase service role, which bypasses RLS.
 --
 -- Run this once in the Supabase SQL editor after applying the Drizzle migration.
 
