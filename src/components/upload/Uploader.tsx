@@ -59,10 +59,11 @@ export function Uploader() {
   const [remembered, setRemembered] = useState(false);
   const [caption, setCaption] = useState("");
   const [items, setItems] = useState<Item[]>([]);
-  const [doneCount, setDoneCount] = useState(0);
   const [drag, setDrag] = useState(false);
   const [qr, setQr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const uploadedCount = items.filter((it) => it.status === "done").length;
+  const allUploaded = items.length > 0 && uploadedCount === items.length;
   // Latest name/caption, read inside async uploads so a name typed mid-batch still applies.
   const sigRef = useRef({ name: "", caption: "" });
   useEffect(() => {
@@ -106,6 +107,13 @@ export function Uploader() {
     setRemembered(false);
   }
 
+  function resetUploaderUi() {
+    for (const it of items) URL.revokeObjectURL(it.preview);
+    setItems([]);
+    setCaption("");
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
   /** Compress + upload one staged item immediately. */
   async function processAndUpload(it: Item) {
     try {
@@ -127,8 +135,10 @@ export function Uploader() {
         throw new Error(data.error ?? "Upload failed.");
       }
       updateItem(it.id, { status: "done" });
-      setDoneCount((c) => c + 1);
-      if (signName.trim()) saveUploaderName(window.localStorage, signName);
+      if (signName.trim()) {
+        saveUploaderName(window.localStorage, signName);
+        setRemembered(true);
+      }
     } catch (err) {
       updateItem(it.id, { status: "error", error: err instanceof Error ? err.message : "Upload failed." });
     }
@@ -148,6 +158,31 @@ export function Uploader() {
     if (fileRef.current) fileRef.current.value = "";
     setItems((prev) => [...fresh, ...prev]);
     await mapWithConcurrency(fresh, 3, (it) => processAndUpload(it));
+  }
+
+  if (allUploaded) {
+    return (
+      <div className="mx-auto max-w-2xl">
+        <div className="deco-card p-7 text-center sm:p-10">
+          <p className="eyebrow">Thank you</p>
+          <h2 className="h-title mt-3 text-3xl text-ink sm:text-4xl">All images are uploaded, thank you</h2>
+          <p className="mx-auto mt-4 max-w-md font-display text-base italic text-ink-soft sm:text-lg">
+            {uploadedCount} photograph{uploadedCount === 1 ? "" : "s"} joined Iyane&apos;s keepsake.
+          </p>
+          <div className="mt-7 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+            <Link href="/gallery" className="btn-ticket">
+              See Gallery
+            </Link>
+            <Link href="/" className="btn-ticket btn-ticket-blue">
+              Go Home
+            </Link>
+            <button type="button" onClick={resetUploaderUi} className="btn-ticket !bg-bg !text-ink">
+              Add More Photos
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -238,9 +273,9 @@ export function Uploader() {
       />
 
       {/* 3 — Live progress + the wall link */}
-      {doneCount > 0 && (
+      {uploadedCount > 0 && (
         <p className="text-center font-display text-lg italic text-ink-soft">
-          {doneCount} photograph{doneCount === 1 ? "" : "s"} added — thank you.{" "}
+          {uploadedCount} photograph{uploadedCount === 1 ? "" : "s"} added — thank you.{" "}
           <Link href="/gallery" className="text-gold-deep underline-offset-4 hover:underline">
             See the wall →
           </Link>

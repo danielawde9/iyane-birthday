@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { StarRule } from "@/components/ui/StarRule";
+import { clearUploaderName, loadUploaderName, saveUploaderName } from "@/lib/uploader-name";
 
 export interface Entry {
   id: string;
@@ -13,8 +14,25 @@ export interface Entry {
 
 export function GuestbookWall({ initial }: { initial: Entry[] }) {
   const [entries, setEntries] = useState<Entry[]>(initial);
+  const [name, setName] = useState("");
+  const [remembered, setRemembered] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const saved = loadUploaderName(window.localStorage);
+    if (saved) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration-safe: remembered name is read from localStorage after mount
+      setName(saved);
+      setRemembered(true);
+    }
+  }, []);
+
+  function clearName() {
+    clearUploaderName(window.localStorage);
+    setName("");
+    setRemembered(false);
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -22,6 +40,7 @@ export function GuestbookWall({ initial }: { initial: Entry[] }) {
     setStatus("submitting");
     setError(null);
     const form = new FormData(formEl);
+    const submittedName = String(form.get("name") ?? "").trim();
     try {
       const res = await fetch("/api/guestbook", {
         method: "POST",
@@ -31,7 +50,13 @@ export function GuestbookWall({ initial }: { initial: Entry[] }) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Couldn't post your message.");
       setEntries((prev) => [data.entry as Entry, ...prev]);
-      formEl.reset();
+      if (submittedName) {
+        saveUploaderName(window.localStorage, submittedName);
+        setName(submittedName);
+        setRemembered(true);
+      }
+      const messageEl = formEl.elements.namedItem("message");
+      if (messageEl instanceof HTMLTextAreaElement) messageEl.value = "";
       setStatus("idle");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't post your message.");
@@ -44,8 +69,37 @@ export function GuestbookWall({ initial }: { initial: Entry[] }) {
       <form onSubmit={onSubmit} className="deco-card h-fit p-7 lg:sticky lg:top-24">
         <p className="eyebrow">A line for the keepsake</p>
         <h2 className="h-title mt-2 text-3xl text-ink">Leave a few words</h2>
-        <label className="field-label mt-6" htmlFor="gb-name">Your name</label>
-        <input id="gb-name" name="name" required maxLength={80} className="field-input" placeholder="e.g. Jiddo" />
+        {remembered ? (
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <p className="eyebrow eyebrow-mute">Signing as</p>
+            <span className="inline-flex items-center gap-2 rounded-full bg-paper-deep px-3 py-1 font-display text-lg text-ink">
+              {name}
+              <button
+                type="button"
+                onClick={clearName}
+                aria-label="Clear saved name"
+                className="leading-none text-ink-soft transition hover:text-primary"
+              >
+                x
+              </button>
+            </span>
+            <input type="hidden" name="name" value={name} />
+          </div>
+        ) : (
+          <>
+            <label className="field-label mt-6" htmlFor="gb-name">Your name</label>
+            <input
+              id="gb-name"
+              name="name"
+              required
+              maxLength={80}
+              className="field-input"
+              placeholder="e.g. Jiddo"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </>
+        )}
         <label className="field-label mt-7" htmlFor="gb-message">Your message</label>
         <textarea
           id="gb-message"

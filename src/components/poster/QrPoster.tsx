@@ -20,16 +20,16 @@ export function QrPoster() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg p-6 print:bg-white print:p-0">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg p-0 print:bg-white print:p-0 sm:p-6">
       <button
         onClick={() => window.print()}
-        className="btn-ticket print:hidden"
+        className="btn-ticket mt-4 print:hidden sm:mt-0"
       >
         Print this Poster
       </button>
 
       <article
-        className="poster-article relative w-full max-w-[760px] overflow-hidden bg-paper-deep text-ink print:max-w-none"
+        className="poster-article relative w-full max-w-none overflow-hidden bg-paper-deep text-ink print:max-w-none sm:max-w-[760px]"
       >
         {/* heavy ink frame + 1px ink inner stroke (the "misregistered print" feel) */}
         <div
@@ -49,20 +49,20 @@ export function QrPoster() {
 
         {/* top red banner with scalloped bottom edge */}
         <div
-          className="relative z-[1] mx-[24px] mt-[24px] bg-primary px-4 py-3 text-center sm:px-6"
+          className="relative z-[1] mx-3 mt-3 bg-primary px-3 py-3 text-center sm:mx-[24px] sm:mt-[24px] sm:px-6"
           style={{ borderBottom: "3px solid var(--c-ink)" }}
         >
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-accent sm:text-sm sm:tracking-[0.32em]">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-accent sm:text-sm sm:tracking-[0.32em]">
             <span className="text-accent">★</span> Step Right Up · The Greatest Little Show <span className="text-accent">★</span>
           </p>
         </div>
         {/* yellow scalloped strip dangling off the banner */}
-        <div className="relative z-[1] mx-[24px] h-4">
+        <div className="relative z-[1] mx-3 h-4 sm:mx-[24px]">
           <ScallopRow />
         </div>
 
         {/* Body */}
-        <div className="relative flex flex-col items-center px-6 py-10 text-center sm:px-12 sm:py-12">
+        <div className="relative flex flex-col items-center px-4 py-8 text-center sm:px-12 sm:py-12">
           {/* Eyebrow billing */}
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.34em] text-ink">
             One Night Only
@@ -76,7 +76,7 @@ export function QrPoster() {
             className="mt-4 font-display font-bold uppercase leading-none text-primary"
             style={{
               fontSize: "clamp(44px, 12vw, 136px)",
-              letterSpacing: "-0.02em",
+              letterSpacing: "0",
               textShadow: "3px 3px 0 var(--c-ink)",
             }}
           >
@@ -110,7 +110,7 @@ export function QrPoster() {
           </div>
 
           {/* Action headline */}
-          <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-ink sm:text-3xl">
+          <h2 className="font-display text-2xl font-bold uppercase text-ink sm:text-3xl">
             Add Your Photographs
           </h2>
           <p className="mt-3 max-w-sm font-body text-sm italic text-ink/85 sm:text-base">
@@ -122,7 +122,6 @@ export function QrPoster() {
             <div className="ticket-stub relative bg-bg p-3 sm:-rotate-2 print:bg-white">
               <span className="admit-stamp absolute -top-3 left-1 sm:-left-4 sm:-top-4">Admit One</span>
               {qr ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={qr} alt="QR code to the photo upload page" className="h-40 w-40 sm:h-56 sm:w-56" />
               ) : (
                 <div className="flex h-40 w-40 items-center justify-center font-mono text-xs font-bold uppercase tracking-[0.18em] text-ink/40 sm:h-56 sm:w-56">
@@ -137,15 +136,15 @@ export function QrPoster() {
         </div>
 
         {/* bottom scalloped strip (above the bottom banner in flow) */}
-        <div className="relative z-[1] mx-[24px] h-4">
+        <div className="relative z-[1] mx-3 h-4 sm:mx-[24px]">
           <ScallopRow flip />
         </div>
         {/* bottom red banner */}
         <div
-          className="relative z-[1] mx-[24px] mb-[24px] bg-primary px-4 py-3 text-center sm:px-6"
+          className="relative z-[1] mx-3 mb-3 bg-primary px-3 py-3 text-center sm:mx-[24px] sm:mb-[24px] sm:px-6"
           style={{ borderTop: "3px solid var(--c-ink)" }}
         >
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-accent sm:text-sm sm:tracking-[0.32em]">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-accent sm:text-sm sm:tracking-[0.32em]">
             <span className="text-accent">★</span> Stars Encouraged · Sunday Best · MMXXVI <span className="text-accent">★</span>
           </p>
         </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { ButtonLink } from "@/components/ui/Button";
 import { ScallopedHeader } from "@/components/brand/Marquee";
 import { TextLogo } from "@/components/brand/TextLogo";
@@ -17,6 +18,7 @@ const navItems = [
 
 export function SiteHeader({ chrome }: { chrome?: SiteChrome }) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
   const brandHref = chrome?.homeHref ?? "/";
   const isArchiveMode = chrome?.mode === "archive";
   const activeNavItems =
@@ -30,6 +32,7 @@ export function SiteHeader({ chrome }: { chrome?: SiteChrome }) {
   const ctaHref = isArchiveMode ? "/archive" : "/upload";
   const ctaWide = isArchiveMode ? "All Years" : "Add Photos";
   const ctaNarrow = isArchiveMode ? "All" : "Add";
+  const showCta = isArchiveMode || pathname !== "/upload";
   const yearLabel = chrome
     ? isArchiveMode
       ? chrome.yearLabel
@@ -39,7 +42,7 @@ export function SiteHeader({ chrome }: { chrome?: SiteChrome }) {
   return (
     <header className="sticky top-0 z-40 mb-6">
       <ScallopedHeader scallop="bottom">
-        <div className="mx-auto flex h-[78px] max-w-6xl items-center justify-between gap-3 px-4 sm:h-[88px] sm:gap-4 sm:px-8">
+        <div className="relative mx-auto flex h-[78px] max-w-6xl items-center justify-between gap-3 px-4 sm:h-[88px] sm:gap-4 sm:px-8">
           <div className="flex min-w-0 items-baseline gap-3 sm:gap-5">
             <Link
               href={brandHref}
@@ -65,7 +68,7 @@ export function SiteHeader({ chrome }: { chrome?: SiteChrome }) {
             </span>
           </div>
 
-          <nav className="hidden items-center gap-5 lg:flex">
+          <nav className="hidden items-center gap-5 lg:flex" aria-label="Main navigation">
             {activeNavItems.map((it) => {
               const active = pathname === it.href || (it.href !== "/" && pathname.startsWith(it.href));
               return (
@@ -83,10 +86,57 @@ export function SiteHeader({ chrome }: { chrome?: SiteChrome }) {
             })}
           </nav>
 
-          <ButtonLink href={ctaHref}>
-            <span className="hidden sm:inline">{ctaWide}</span>
-            <span className="sm:hidden">{ctaNarrow}</span>
-          </ButtonLink>
+          <div className="flex items-center gap-2">
+            {showCta && (
+              <ButtonLink href={ctaHref} className="hidden sm:inline-flex">
+                {ctaWide}
+              </ButtonLink>
+            )}
+            <button
+              type="button"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              aria-controls="site-mobile-menu"
+              onClick={() => setMenuOpen((open) => !open)}
+              className="flex h-11 w-11 items-center justify-center border-2 border-on-dark text-on-dark transition hover:border-accent hover:text-accent lg:hidden"
+            >
+              <span className="flex flex-col gap-1.5" aria-hidden="true">
+                <span className={cn("block h-0.5 w-5 bg-current transition", menuOpen && "translate-y-2 rotate-45")} />
+                <span className={cn("block h-0.5 w-5 bg-current transition", menuOpen && "opacity-0")} />
+                <span className={cn("block h-0.5 w-5 bg-current transition", menuOpen && "-translate-y-2 -rotate-45")} />
+              </span>
+            </button>
+          </div>
+
+          {menuOpen && (
+            <nav
+              id="site-mobile-menu"
+              aria-label="Mobile navigation"
+              className="deco-card absolute inset-x-4 top-full z-50 mt-2 flex flex-col gap-1 bg-paper-deep p-4 text-ink lg:hidden"
+            >
+              {activeNavItems.map((it) => {
+                const active = pathname === it.href || (it.href !== "/" && pathname.startsWith(it.href));
+                return (
+                  <Link
+                    key={it.href}
+                    href={it.href}
+                    onClick={() => setMenuOpen(false)}
+                    className={cn(
+                      "px-2 py-3 font-display text-sm font-bold uppercase tracking-[0.08em] transition hover:text-primary",
+                      active && "text-primary",
+                    )}
+                  >
+                    {it.label}
+                  </Link>
+                );
+              })}
+              {showCta && (
+                <ButtonLink href={ctaHref} onClick={() => setMenuOpen(false)} className="mt-2 w-full">
+                  {ctaNarrow === "Add" ? "Add Photos" : ctaWide}
+                </ButtonLink>
+              )}
+            </nav>
+          )}
         </div>
       </ScallopedHeader>
     </header>
