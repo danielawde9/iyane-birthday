@@ -15,7 +15,8 @@
     "db:bucket": "tsx scripts/create-bucket.ts",
     "db:seed": "tsx src/db/seed.ts",
     "db:seed-photos": "tsx src/db/seed-photos.ts",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "db:sync-event": "tsx scripts/sync-event-details.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -32,7 +33,8 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-photo-album": "^3.6.0",
-    "yet-another-react-lightbox": "^3.32.0"
+    "yet-another-react-lightbox": "^3.32.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

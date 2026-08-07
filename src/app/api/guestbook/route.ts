@@ -4,6 +4,7 @@ import { getActiveEvent, insertGuestbook, listGuestbook } from "@/db/queries";
 import { getClientIp } from "@/lib/request";
 import { writeLimiter } from "@/lib/ratelimit-instance";
 import { sanitizeText } from "@/lib/sanitize";
+import { createEditToken } from "@/lib/edit-token";
 
 export async function GET() {
   const event = await getActiveEvent();
@@ -29,9 +30,15 @@ export async function POST(request: Request) {
   const event = await getActiveEvent();
   if (!event) return NextResponse.json({ error: "There's no active celebration yet." }, { status: 400 });
 
-  const entry = await insertGuestbook({ eventId: event.id, name, message });
+  // The capability token that lets this guest edit or remove their own wish.
+  // Only the hash is stored; the raw token is returned exactly once, here, and
+  // is never logged or placed in a URL. See src/lib/edit-token.ts.
+  const { token, hash } = createEditToken();
+
+  const entry = await insertGuestbook({ eventId: event.id, name, message, editTokenHash: hash });
   return NextResponse.json({
     ok: true,
     entry: { id: entry.id, name: entry.name, message: entry.message, createdAt: entry.createdAt.toISOString() },
+    editToken: token,
   });
 }

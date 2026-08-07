@@ -45,8 +45,11 @@ export function mapPhoto(r: Raw): PhotoRow {
     caption: asStringOrNull(r.caption),
     featured: r.featured as boolean,
     status: asString(r.status), // text column → string (matches $inferSelect)
+    editedAt: asDateOrNull(r.edited_at),
     createdAt: asDate(r.created_at),
   };
+  // Note the omission: `edit_token_hash` is never mapped. PhotoRow excludes it by
+  // type (src/db/schema.ts), so adding it here would not compile.
 }
 
 export function mapGuestbook(r: Raw): GuestbookRow {
@@ -56,6 +59,7 @@ export function mapGuestbook(r: Raw): GuestbookRow {
     name: asString(r.name),
     message: asString(r.message),
     status: asString(r.status),
+    editedAt: asDateOrNull(r.edited_at),
     createdAt: asDate(r.created_at),
   };
 }

@@ -41,7 +41,7 @@ export default async function DetailsPage() {
         </Card>
         <Card title="Attire">
           <p className="h-title text-2xl text-ink">{event?.dressCode ?? theme.copy.dressCode}</p>
-          <BowTie className="mx-auto mt-4 h-5 w-10 text-gold-deep" />
+          <BowTie className="mx-auto mt-4 h-8 w-28" />
         </Card>
       </div>
     </PageShell>

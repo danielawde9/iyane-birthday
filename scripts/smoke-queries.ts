@@ -10,6 +10,7 @@
  * Run:      npx tsx scripts/smoke-queries.ts
  */
 import "../src/db/load-env"; // must run before queries.ts pulls in env.ts
+import { createEditToken } from "../src/lib/edit-token";
 import {
   getActiveEvent,
   listEvents,
@@ -73,6 +74,7 @@ async function main() {
     thumbKey: "smoke/test_thumb.jpg",
     width: 100,
     height: 100,
+    editTokenHash: createEditToken().hash,
     uploaderName: "Smoke Test",
     caption: "smoke",
   });
@@ -92,7 +94,7 @@ async function main() {
   assert((await deletePhoto(photo.id)) === null, "deleting a missing photo returns null (maybeSingle)");
 
   section("guestbook (hidden-row visibility)");
-  const entry = await insertGuestbook({ eventId, name: "Smoke", message: "hello from smoke test" });
+  const entry = await insertGuestbook({ eventId, name: "Smoke", message: "hello from smoke test", editTokenHash: createEditToken().hash });
   assert(entry.id && isDate(entry.createdAt), "insertGuestbook returns a row with Date createdAt");
   assert((await listGuestbook(eventId)).some((g) => g.id === entry.id), "new entry shows in public (visible) guestbook");
 

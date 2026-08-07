@@ -34,19 +34,19 @@ export function PhotoStage({ photo }: { photo: PhotoDTO | null }) {
         return (
           <div key={p.id} className={`absolute inset-0 ${isTop && layers.length > 1 ? "photo-fade" : ""}`}>
             {/* Blurred, darkened fill */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={p.url}
               alt=""
               aria-hidden="true"
               className="photo-kb-bg absolute inset-0 h-full w-full object-cover blur-2xl brightness-[0.45]"
             />
-            {/* The whole photo, uncropped */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/* The whole photo, uncropped. The drop-shadow is what separates it
+                from the blurred copy behind it — without it the two blur into
+                one another and the photograph stops reading as a photograph. */}
             <img
               src={p.url}
               alt={p.caption ?? "A moment from the celebration"}
-              className="absolute inset-0 h-full w-full object-contain p-3 sm:p-6"
+              className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_12px_44px_rgba(0,0,0,0.62)] sm:p-6"
             />
           </div>
         );

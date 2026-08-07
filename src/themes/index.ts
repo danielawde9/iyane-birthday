@@ -52,17 +52,26 @@ const PALETTE_VAR_MAP: Record<keyof ThemePalette, string> = {
 };
 
 /** Map a theme's palette + fonts to the CSS custom properties consumed by
- *  globals.css. Fonts are optional and only emitted when the theme overrides them. */
+ *  globals.css. Fonts are optional and only emitted when the theme overrides them.
+ *
+ *  Fonts are emitted as `--th-font-*`, NOT `--font-*`. That indirection is load
+ *  bearing: globals.css declares Tailwind's font utilities inside `@theme inline`,
+ *  and `inline` means the utility is compiled with the *resolved value* rather
+ *  than a `var()` reference — so `.font-display` bakes in whatever `--font-display`
+ *  held at build time and can never see a per-theme override injected at runtime.
+ *  Writing to `--th-font-*` instead, which the build-time stacks read through
+ *  `var(--th-font-display, <default>)`, lets both the utilities and the
+ *  hand-written CSS follow the active theme. */
 export function themeToCssVars(theme: Theme): Record<string, string> {
   const vars: Record<string, string> = {};
   for (const key of Object.keys(PALETTE_VAR_MAP) as (keyof ThemePalette)[]) {
     vars[PALETTE_VAR_MAP[key]] = theme.palette[key];
   }
   if (theme.fonts) {
-    vars["--font-display"] = theme.fonts.display;
-    vars["--font-body"] = theme.fonts.body;
-    vars["--font-script"] = theme.fonts.script;
-    if (theme.fonts.mono) vars["--font-mono"] = theme.fonts.mono;
+    vars["--th-font-display"] = theme.fonts.display;
+    vars["--th-font-body"] = theme.fonts.body;
+    vars["--th-font-script"] = theme.fonts.script;
+    if (theme.fonts.mono) vars["--th-font-mono"] = theme.fonts.mono;
   }
   return vars;
 }

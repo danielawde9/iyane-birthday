@@ -1,45 +1,61 @@
 import type { Theme } from "./types";
 
 /**
- * Year 1 — "The Grand Jubilee": a vintage editorial/letterpress identity in
- * Big Top Red, Aged Gold, Midnight ink, and parchment cream. The site feels
- * like a physical artifact — a hand-printed playbill found in a trunk. Slug
- * is kept as "big-top" so existing event rows resolve.
+ * Year 1 — "The Greatest Little Show on Earth": a hand-painted watercolor
+ * circus identity in faded madder red, dusty azure, marigold gold and
+ * tea-stained parchment. The site is meant to read as the same artist's hand as
+ * the animated invitation the guests received — see `public/art/CREDITS.md`.
+ *
+ * Every hex below is sampled from that film (`#A3322E` is its red, `#596C90`
+ * its blue, `#D5A76A` its gold) and then contrast-checked against the parchment
+ * ground. Two pairings are deliberately NOT usable and are worth knowing before
+ * you reach for them:
+ *
+ *  - `accent` on `primary` is 3.13:1 — gold on red fails AA. Watercolor ochre is
+ *    a dark pigment; there is no believable version of it that also passes on a
+ *    madder red. On the red bands use `accentBright` (5.17:1) instead.
+ *  - `muted` is the tertiary/placeholder tone at 4.69:1. It passes, but only
+ *    just; don't push it lighter.
+ *
+ * The slug stays "big-top" on purpose. The active event row resolves through it
+ * (and through the "mr-onederful" alias in ./index.ts), so re-skinning in place
+ * changes the live site with no database migration. A new slug would have left
+ * every existing row on the old letterpress look.
  */
 export const bigTop: Theme = {
   slug: "big-top",
-  name: "The Grand Jubilee",
-  emoji: "🎟️",
+  name: "The Greatest Little Show on Earth",
+  emoji: "🎪",
   palette: {
-    bg: "#FFF8F0",
-    surface: "#FFF8F0",
-    paperDeep: "#FCEDC5",
-    primary: "#AF101A",
-    primaryDeep: "#930010",
-    projectorDeep: "#410003",
-    accent: "#FBC02D",
-    accentBright: "#FFDFA0",
-    goldDeep: "#795900",
-    ink: "#221B03",
-    inkSoft: "#5B403D",
-    onDark: "#FFF8F0",
-    onSurface: "#221B03",
-    muted: "#8F6F6C",
-    joy: "#AF101A",
+    bg: "#F7EEDD", // tea-stained parchment
+    surface: "#FBF5E9", // lighter paper patch, for cards that sit above the ground
+    paperDeep: "#EDDFC4", // deeper tea wash — tile backing, panel fill
+    primary: "#A3322E", // madder red, sampled from the film's tent stripe
+    primaryDeep: "#82241F", // shadow side of the red wash
+    projectorDeep: "#2A1D14", // deep umber — slideshow backdrop
+    accent: "#D5A76A", // yellow-ochre pigment. A FILL, never text on cream.
+    accentBright: "#F2DDB4", // pale ochre wash — the highlight tone on red
+    goldDeep: "#8F5C1C", // burnt ochre, for small text on cream (4.91:1)
+    ink: "#3A2B20", // sepia-brown ink — there is no black in this system
+    inkSoft: "#6E594A", // diluted ink (5.71:1)
+    onDark: "#FBF3E4", // cream on red (6.24:1)
+    onSurface: "#3A2B20", // body ink (11.79:1)
+    muted: "#7A6752", // dry-brush grey-brown (4.69:1)
+    joy: "#596C90", // dusty azure, the film's third hue
   },
   fonts: {
-    display: 'var(--font-arimo), "Arial Black", "Helvetica Neue", Helvetica, system-ui, sans-serif',
-    body: 'var(--font-caslon), "Libre Caslon Text", Caslon, Georgia, "Times New Roman", serif',
-    script: 'var(--font-caslon), "Libre Caslon Text", Caslon, Georgia, serif',
-    mono: 'var(--font-spacemono), "Courier New", "Andale Mono", monospace',
+    display: 'var(--font-bevan), Rockwell, "Courier Slab", Georgia, serif',
+    body: 'var(--font-lora), Lora, Georgia, "Times New Roman", serif',
+    script: 'var(--font-yellowtail), "Brush Script MT", cursive',
+    mono: 'var(--font-elite), "Special Elite", "Courier New", monospace',
   },
   copy: {
-    tagline: "The Grand Jubilee · Anno MMXXVI",
+    tagline: "The Greatest Little Show on Earth",
     heroScript: "Iyane",
     heroLead: "The Greatest Little Show on Earth",
     heroBig: "ONE",
-    invite: "An evening under the big top — a keepsake placed by the room.",
-    dressCode: "Sunday best · stars encouraged",
+    invite: "Come one, come all — a keepsake placed by the room.",
+    dressCode: "Sunday best · stripes encouraged",
   },
   decoration: "bigtop",
 };

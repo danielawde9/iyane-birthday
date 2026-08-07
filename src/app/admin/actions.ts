@@ -42,6 +42,8 @@ export async function deletePhotoAction(formData: FormData) {
 export async function setPhotoStatusAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
+  // The host only ever hides or restores. 'removed' is the guest's own state and
+  // is never writable from here, so a tampered form can't fake a guest removal.
   const status = formData.get("status") === "hidden" ? "hidden" : "visible";
   if (id) await setPhotoStatus(id, status);
   refreshPublic();
@@ -58,6 +60,8 @@ export async function setFeaturedAction(formData: FormData) {
 export async function setGuestbookStatusAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
+  // The host only ever hides or restores. 'removed' is the guest's own state and
+  // is never writable from here, so a tampered form can't fake a guest removal.
   const status = formData.get("status") === "hidden" ? "hidden" : "visible";
   if (id) await setGuestbookStatus(id, status);
   refreshPublic();

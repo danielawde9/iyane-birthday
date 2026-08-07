@@ -9,6 +9,7 @@ import { getActiveEvent, insertPhoto } from "@/db/queries";
 import { uploadToStorage } from "@/lib/storage";
 import { toPhotoDTO } from "@/lib/photo";
 import { sanitizeText, clampInt } from "@/lib/sanitize";
+import { createEditToken } from "@/lib/edit-token";
 
 export async function POST(request: Request) {
   const h = await headers();
@@ -73,6 +74,12 @@ export async function POST(request: Request) {
     thumbKey = `data:${thumbMime};base64,${Buffer.from(thumbBytes).toString("base64")}`;
   }
 
+  // 6) Mint the capability token that lets this guest edit or remove this photo.
+  //    Only the hash is stored. The raw token is returned exactly once, below,
+  //    as a sibling of the DTO — never inside it (PhotoDTO is also the public
+  //    feed shape) — and is never logged or placed in a URL.
+  const { token, hash } = createEditToken();
+
   const photo = await insertPhoto({
     eventId: event.id,
     storageKey,
@@ -81,7 +88,8 @@ export async function POST(request: Request) {
     height,
     uploaderName,
     caption,
+    editTokenHash: hash,
   });
 
-  return NextResponse.json({ ok: true, photo: toPhotoDTO(photo) });
+  return NextResponse.json({ ok: true, photo: toPhotoDTO(photo), editToken: token });
 }

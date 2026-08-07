@@ -3,6 +3,7 @@ import { toPhotoDTO } from "@/lib/photo";
 import { toPublicUrl } from "@/lib/storage";
 import { Gallery } from "@/components/gallery/Gallery";
 import { PageShell } from "@/components/ui/PageShell";
+import { LivingGallery } from "@/components/home/LivingGallery";
 
 export const dynamic = "force-dynamic";
 
@@ -33,20 +34,27 @@ export default async function GalleryPage() {
   const featured = featuredRow ? toPhotoDTO(featuredRow) : null;
   const contributors = contributorsRaw.map((c) => ({ name: c.name, count: c.count, coverUrl: toPublicUrl(c.coverKey) }));
 
+  // The slideshow leads with the host's featured photo, then the rest. It reuses
+  // the rows this page already fetched rather than querying again — the old home
+  // page ran its own set of queries for exactly this list.
+  const slideshow = featured ? [featured, ...initial.filter((p) => p.id !== featured.id)] : initial;
+
   return (
-    <PageShell
-      wide
-      eyebrow="The photo wall · a shared keepsake"
-      title="Iyane's Year"
-      lead="A page written by the room — every photograph here came from a guest."
-    >
-      <Gallery
-        featured={featured}
-        contributors={contributors}
-        initial={initial}
-        nextOffset={hasMore ? INITIAL_LIMIT : null}
-        totalPhotos={total}
-      />
-    </PageShell>
+    <>
+      <LivingGallery photos={slideshow} />
+      <PageShell
+        full
+        eyebrow="The photo wall · a shared keepsake"
+        title="Iyane's Year"
+        lead="A page written by the room — every photograph here came from a guest."
+      >
+        <Gallery
+          contributors={contributors}
+          initial={initial}
+          nextOffset={hasMore ? INITIAL_LIMIT : null}
+          totalPhotos={total}
+        />
+      </PageShell>
+    </>
   );
 }

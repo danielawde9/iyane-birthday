@@ -4,6 +4,7 @@ import { getAdminUser, isAdminBypass } from "@/lib/auth";
 import { getActiveEvent, listEvents, listAllPhotos, listContributors, listGuestbook } from "@/db/queries";
 import { listThemes } from "@/themes";
 import { toPublicUrl } from "@/lib/storage";
+import { statusControl } from "@/lib/admin-status";
 import {
   deletePhotoAction,
   setPhotoStatusAction,
@@ -140,8 +141,12 @@ export default async function AdminPage() {
                 {p.featured && (
                   <span className="absolute left-1.5 top-1.5 z-10 rounded bg-primary/85 px-1.5 py-0.5 text-[9px] text-accent">★ Featured</span>
                 )}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={toPublicUrl(p.thumbKey)} alt={p.caption ?? "Photo"} className={`aspect-square w-full object-cover ${p.status === "hidden" ? "opacity-40" : ""}`} />
+                {statusControl(p.status).badge && (
+                  <span className="absolute right-1.5 top-1.5 z-10 rounded bg-on-surface/75 px-1.5 py-0.5 text-[9px] text-white">
+                    {statusControl(p.status).badge}
+                  </span>
+                )}
+                <img src={toPublicUrl(p.thumbKey)} alt={p.caption ?? "Photo"} className={`aspect-square w-full object-cover ${statusControl(p.status).dim ? "opacity-40" : ""}`} />
                 <div className="space-y-2 p-2 text-xs">
                   <p className="truncate text-on-surface/70">{p.uploaderName ?? "Guest"}{p.caption ? ` · ${p.caption}` : ""}</p>
                   <form action={setFeaturedAction}>
@@ -153,8 +158,8 @@ export default async function AdminPage() {
                   <div className="flex gap-2">
                     <form action={setPhotoStatusAction} className="flex-1">
                       <input type="hidden" name="id" value={p.id} />
-                      <input type="hidden" name="status" value={p.status === "visible" ? "hidden" : "visible"} />
-                      <button className="w-full rounded-md border border-primary/20 py-1 hover:bg-primary/5">{p.status === "visible" ? "Hide" : "Show"}</button>
+                      <input type="hidden" name="status" value={statusControl(p.status).nextStatus} />
+                      <button className="w-full rounded-md border border-primary/20 py-1 hover:bg-primary/5">{statusControl(p.status).action}</button>
                     </form>
                     <form action={deletePhotoAction} className="flex-1">
                       <input type="hidden" name="id" value={p.id} />
@@ -176,15 +181,20 @@ export default async function AdminPage() {
         ) : (
           <ul className="mt-4 space-y-3">
             {wishes.map((g) => (
-              <li key={g.id} className={`flex items-start justify-between gap-4 rounded-xl border border-primary/10 p-3 text-sm ${g.status === "hidden" ? "opacity-50" : ""}`}>
+              <li key={g.id} className={`flex items-start justify-between gap-4 rounded-xl border border-primary/10 p-3 text-sm ${statusControl(g.status).dim ? "opacity-50" : ""}`}>
                 <div>
+                  {statusControl(g.status).badge && (
+                    <p className="mb-1 text-[10px] uppercase tracking-wider text-on-surface/50">
+                      {statusControl(g.status).badge}
+                    </p>
+                  )}
                   <p className="text-on-surface">{g.message}</p>
                   <p className="mt-1 font-script text-xl text-gold-deep">{g.name}</p>
                 </div>
                 <form action={setGuestbookStatusAction}>
                   <input type="hidden" name="id" value={g.id} />
-                  <input type="hidden" name="status" value={g.status === "visible" ? "hidden" : "visible"} />
-                  <button className="whitespace-nowrap rounded-md border border-primary/20 px-3 py-1 text-xs hover:bg-primary/5">{g.status === "visible" ? "Hide" : "Show"}</button>
+                  <input type="hidden" name="status" value={statusControl(g.status).nextStatus} />
+                  <button className="whitespace-nowrap rounded-md border border-primary/20 px-3 py-1 text-xs hover:bg-primary/5">{statusControl(g.status).action}</button>
                 </form>
               </li>
             ))}

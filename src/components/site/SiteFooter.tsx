@@ -3,7 +3,7 @@ import { TextLogo } from "@/components/brand/TextLogo";
 import type { SiteChrome } from "@/lib/year-theme-shell";
 
 const footLink =
-  "font-mono text-xs font-bold uppercase tracking-[0.2em] text-on-dark hover:text-accent transition-colors";
+  "font-mono text-xs uppercase tracking-[0.2em] text-on-dark hover:text-accent-bright transition-colors";
 
 export function SiteFooter({ chrome }: { chrome?: SiteChrome }) {
   const yearLabel = chrome ? `${chrome.yearLabel} · ${chrome.themeLabel}` : "Year One · MMXXVI";
@@ -36,8 +36,8 @@ export function SiteFooter({ chrome }: { chrome?: SiteChrome }) {
             </Link>
           ))}
         </nav>
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.28em] text-on-dark/85">
-          <span className="text-accent">★</span> Iyane · {yearLabel} <span className="text-accent">★</span>
+        <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-on-dark/85">
+          <span className="text-accent-bright">◆</span> Iyane · {yearLabel} <span className="text-accent-bright">◆</span>
         </p>
       </div>
     </footer>

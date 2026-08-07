@@ -1,51 +1,50 @@
 import type { Metadata } from "next";
-import { Arimo, Libre_Caslon_Text, Space_Mono, Bagel_Fat_One, Quicksand, Caveat } from "next/font/google";
+import { Bevan, Lora, Special_Elite, Yellowtail, Bagel_Fat_One, Quicksand, Caveat } from "next/font/google";
 import "./globals.css";
 import { getActiveTheme } from "@/lib/active-theme";
 import { themeToCssVars } from "@/themes";
 import { MusicPlayerProvider } from "@/components/site/MusicPlayerProvider";
 import { MusicToggle } from "@/components/site/MusicToggle";
 
-// Default Grand Jubilee fonts.
-const arimo = Arimo({
+/*
+ * Every registered theme's fonts are declared here, but `preload: false` on all
+ * of them is deliberate. next/font's default is to emit a <link rel="preload">
+ * for every declared family on every page whether or not it renders — and the
+ * active theme is only resolved per-request further down this file, so there is
+ * no way to preload conditionally through the next/font API. Declaring them all
+ * costs nothing extra at runtime: a browser only downloads an @font-face source
+ * that the rendered CSS actually references, so a page still fetches just the
+ * three or four faces its theme names. `display: "swap"` covers the gap.
+ */
+
+// Year 1 — the watercolor circus.
+const bevan = Bevan({ subsets: ["latin"], weight: "400", variable: "--font-bevan", display: "swap", preload: false });
+const lora = Lora({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-arimo",
-  display: "swap",
-});
-const caslon = Libre_Caslon_Text({
-  subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
-  variable: "--font-caslon",
+  variable: "--font-lora",
   display: "swap",
+  preload: false,
 });
-const spaceMono = Space_Mono({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-spacemono",
-  display: "swap",
-});
+const elite = Special_Elite({ subsets: ["latin"], weight: "400", variable: "--font-elite", display: "swap", preload: false });
+const yellowtail = Yellowtail({ subsets: ["latin"], weight: "400", variable: "--font-yellowtail", display: "swap", preload: false });
 
 // Tiny Astronaut (Year 2 / playful space mission) fonts.
-const bagel = Bagel_Fat_One({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-bagel",
-  display: "swap",
-});
+const bagel = Bagel_Fat_One({ subsets: ["latin"], weight: "400", variable: "--font-bagel", display: "swap", preload: false });
 const quicksand = Quicksand({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-quicksand",
   display: "swap",
+  preload: false,
 });
 const caveat = Caveat({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   variable: "--font-caveat",
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -63,7 +62,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const theme = await getActiveTheme();
   const themeVars = themeToCssVars(theme) as React.CSSProperties;
-  const fontVars = [arimo, caslon, spaceMono, bagel, quicksand, caveat].map((f) => f.variable).join(" ");
+  const fontVars = [bevan, lora, elite, yellowtail, bagel, quicksand, caveat].map((f) => f.variable).join(" ");
   return (
     <html
       lang="en"

@@ -1,6 +1,8 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 import { publicData, privilegedData } from "@/lib/supabase/data";
 import { mapEvent, mapPhoto, mapGuestbook, toEventColumns } from "./mappers";
+import { PHOTO_COLS, GUESTBOOK_COLS } from "./columns";
+import type { EditableRow } from "@/lib/edit-authz";
 import type { EventRow, NewEventRow, PhotoRow, GuestbookRow } from "./schema";
 
 /**
@@ -19,6 +21,9 @@ import type { EventRow, NewEventRow, PhotoRow, GuestbookRow } from "./schema";
 function check(error: PostgrestError | null, action: string): void {
   if (error) throw new Error(`db.${action}: ${error.message}`);
 }
+
+/** visible = live · hidden = the host took it down · removed = the guest did. */
+export type RowStatus = "visible" | "hidden" | "removed";
 
 // ---- Events -------------------------------------------------------------
 
@@ -71,7 +76,7 @@ export async function listVisiblePhotos(
   const limit = opts.limit ?? 60;
   const offset = opts.offset ?? 0;
   const { uploader } = opts;
-  let q = publicData().from("photos").select("*").eq("event_id", eventId).eq("status", "visible");
+  let q = publicData().from("photos").select(PHOTO_COLS).eq("event_id", eventId).eq("status", "visible");
   if (uploader !== undefined) {
     q = uploader === "__anon__" ? q.is("uploader_name", null) : q.eq("uploader_name", uploader);
   }
@@ -114,7 +119,7 @@ export async function getFeaturedPhoto(eventId: string): Promise<PhotoRow | null
   const pub = publicData();
   const featured = await pub
     .from("photos")
-    .select("*")
+    .select(PHOTO_COLS)
     .eq("event_id", eventId)
     .eq("status", "visible")
     .eq("featured", true)
@@ -124,7 +129,7 @@ export async function getFeaturedPhoto(eventId: string): Promise<PhotoRow | null
 
   const latest = await pub
     .from("photos")
-    .select("*")
+    .select(PHOTO_COLS)
     .eq("event_id", eventId)
     .eq("status", "visible")
     .order("created_at", { ascending: false })
@@ -145,7 +150,7 @@ export async function setFeatured(eventId: string, photoId: string): Promise<voi
 export async function listAllPhotos(eventId: string): Promise<PhotoRow[]> {
   const { data, error } = await privilegedData()
     .from("photos")
-    .select("*")
+    .select(PHOTO_COLS)
     .eq("event_id", eventId)
     .order("created_at", { ascending: false });
   check(error, "listAllPhotos");
@@ -155,7 +160,7 @@ export async function listAllPhotos(eventId: string): Promise<PhotoRow[]> {
 export async function countVisiblePhotos(eventId: string): Promise<number> {
   const { count, error } = await publicData()
     .from("photos")
-    .select("*", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("event_id", eventId)
     .eq("status", "visible");
   check(error, "countVisiblePhotos");
@@ -170,6 +175,8 @@ export interface NewPhotoInput {
   height: number;
   uploaderName?: string | null;
   caption?: string | null;
+  /** sha256 of the uploader's capability token — see src/lib/edit-token.ts. */
+  editTokenHash: string;
 }
 
 export async function insertPhoto(input: NewPhotoInput): Promise<PhotoRow> {
@@ -181,19 +188,64 @@ export async function insertPhoto(input: NewPhotoInput): Promise<PhotoRow> {
     height: input.height,
     uploader_name: input.uploaderName ?? null,
     caption: input.caption ?? null,
+    edit_token_hash: input.editTokenHash,
   };
-  const { data, error } = await privilegedData().from("photos").insert(payload).select().single();
+  const { data, error } = await privilegedData().from("photos").insert(payload).select(PHOTO_COLS).single();
   check(error, "insertPhoto");
   return mapPhoto(data!);
 }
 
-export async function setPhotoStatus(id: string, status: "visible" | "hidden"): Promise<void> {
+export async function setPhotoStatus(id: string, status: RowStatus): Promise<void> {
   const { error } = await privilegedData().from("photos").update({ status }).eq("id", id);
   check(error, "setPhotoStatus");
 }
 
+/**
+ * The authorization lookup for a guest edit. This is the ONLY read in the app
+ * that touches `edit_token_hash`, and it returns its own narrow shape rather
+ * than a PhotoRow so the hash cannot travel any further.
+ */
+export async function getPhotoAuthRow(id: string): Promise<EditableRow | null> {
+  const { data, error } = await privilegedData()
+    .from("photos")
+    .select("status,edit_token_hash")
+    .eq("id", id)
+    .maybeSingle();
+  check(error, "getPhotoAuthRow");
+  return data ? { status: data.status as string, editTokenHash: (data.edit_token_hash as string | null) ?? null } : null;
+}
+
+/**
+ * Apply a guest's text edit. `columns` comes pre-built from
+ * `parsePhotoEdit` (src/lib/edit-payload.ts) and can only ever contain
+ * caption / uploader_name; status, featured and the token hash are unreachable.
+ */
+export async function updatePhotoContent(
+  id: string,
+  columns: Record<string, unknown>,
+  editedAt: Date,
+): Promise<PhotoRow | null> {
+  const { data, error } = await privilegedData()
+    .from("photos")
+    .update({ ...columns, edited_at: editedAt.toISOString() })
+    .eq("id", id)
+    .select(PHOTO_COLS)
+    .maybeSingle();
+  check(error, "updatePhotoContent");
+  return data ? mapPhoto(data) : null;
+}
+
+/** Guest-initiated soft removal. The row and both storage objects stay put. */
+export async function softRemovePhoto(id: string, editedAt: Date): Promise<void> {
+  const { error } = await privilegedData()
+    .from("photos")
+    .update({ status: "removed", edited_at: editedAt.toISOString() })
+    .eq("id", id);
+  check(error, "softRemovePhoto");
+}
+
 export async function deletePhoto(id: string): Promise<PhotoRow | null> {
-  const { data, error } = await privilegedData().from("photos").delete().eq("id", id).select().maybeSingle();
+  const { data, error } = await privilegedData().from("photos").delete().eq("id", id).select(PHOTO_COLS).maybeSingle();
   check(error, "deletePhoto");
   return data ? mapPhoto(data) : null;
 }
@@ -204,9 +256,15 @@ export async function insertGuestbook(values: {
   eventId: string;
   name: string;
   message: string;
+  editTokenHash: string;
 }): Promise<GuestbookRow> {
-  const payload = { event_id: values.eventId, name: values.name, message: values.message };
-  const { data, error } = await privilegedData().from("guestbook").insert(payload).select().single();
+  const payload = {
+    event_id: values.eventId,
+    name: values.name,
+    message: values.message,
+    edit_token_hash: values.editTokenHash,
+  };
+  const { data, error } = await privilegedData().from("guestbook").insert(payload).select(GUESTBOOK_COLS).single();
   check(error, "insertGuestbook");
   return mapGuestbook(data!);
 }
@@ -215,14 +273,49 @@ export async function listGuestbook(eventId: string, includeHidden = false): Pro
   // includeHidden must use the service-role client: with RLS enforced, the anon
   // client cannot see hidden rows even without a status filter.
   const client = includeHidden ? privilegedData() : publicData();
-  let q = client.from("guestbook").select("*").eq("event_id", eventId);
+  let q = client.from("guestbook").select(GUESTBOOK_COLS).eq("event_id", eventId);
   if (!includeHidden) q = q.eq("status", "visible");
   const { data, error } = await q.order("created_at", { ascending: false });
   check(error, "listGuestbook");
   return (data ?? []).map(mapGuestbook);
 }
 
-export async function setGuestbookStatus(id: string, status: "visible" | "hidden"): Promise<void> {
+export async function setGuestbookStatus(id: string, status: RowStatus): Promise<void> {
   const { error } = await privilegedData().from("guestbook").update({ status }).eq("id", id);
   check(error, "setGuestbookStatus");
+}
+
+/** See getPhotoAuthRow — the only guestbook read that touches the token hash. */
+export async function getGuestbookAuthRow(id: string): Promise<EditableRow | null> {
+  const { data, error } = await privilegedData()
+    .from("guestbook")
+    .select("status,edit_token_hash")
+    .eq("id", id)
+    .maybeSingle();
+  check(error, "getGuestbookAuthRow");
+  return data ? { status: data.status as string, editTokenHash: (data.edit_token_hash as string | null) ?? null } : null;
+}
+
+export async function updateGuestbookContent(
+  id: string,
+  columns: Record<string, unknown>,
+  editedAt: Date,
+): Promise<GuestbookRow | null> {
+  const { data, error } = await privilegedData()
+    .from("guestbook")
+    .update({ ...columns, edited_at: editedAt.toISOString() })
+    .eq("id", id)
+    .select(GUESTBOOK_COLS)
+    .maybeSingle();
+  check(error, "updateGuestbookContent");
+  return data ? mapGuestbook(data) : null;
+}
+
+/** Guest-initiated soft removal. Nothing is deleted. */
+export async function softRemoveGuestbook(id: string, editedAt: Date): Promise<void> {
+  const { error } = await privilegedData()
+    .from("guestbook")
+    .update({ status: "removed", edited_at: editedAt.toISOString() })
+    .eq("id", id);
+  check(error, "softRemoveGuestbook");
 }

@@ -7,6 +7,8 @@ import { CrestSmall } from "@/components/brand/Crest";
 import { cn } from "@/lib/cn";
 import { mapWithConcurrency } from "@/lib/concurrency";
 import { loadUploaderName, saveUploaderName, clearUploaderName } from "@/lib/uploader-name";
+import { saveEditToken } from "@/lib/edit-tokens";
+import { qrOptions } from "@/lib/qr";
 
 interface Item {
   id: string;
@@ -80,11 +82,7 @@ export function Uploader() {
   }, []);
 
   useEffect(() => {
-    QRCode.toDataURL(`${window.location.origin}/upload`, {
-      margin: 1,
-      width: 240,
-      color: { dark: "#221B03", light: "#FFF8F0" },
-    })
+    QRCode.toDataURL(`${window.location.origin}/upload`, qrOptions(240))
       .then(setQr)
       .catch(() => setQr(null));
   }, []);
@@ -133,6 +131,11 @@ export function Uploader() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.error ?? "Upload failed.");
+      }
+      // The server returns this photo's capability token exactly once. Without
+      // keeping it, the guest can never edit or remove what they just uploaded.
+      if (typeof data.editToken === "string" && typeof data.photo?.id === "string") {
+        saveEditToken(window.localStorage, "photo", data.photo.id, data.editToken);
       }
       updateItem(it.id, { status: "done" });
       if (signName.trim()) {
@@ -321,7 +324,7 @@ export function Uploader() {
                   >
                     {it.status === "processing" && "Optimising…"}
                     {it.status === "uploading" && "Adding…"}
-                    {it.status === "done" && "★ Added"}
+                    {it.status === "done" && "◆ Added"}
                     {it.status === "error" && (it.error ?? "Failed — tap ✕")}
                   </p>
                 </figcaption>

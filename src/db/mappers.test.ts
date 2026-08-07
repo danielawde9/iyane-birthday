@@ -93,6 +93,21 @@ describe("mapPhoto", () => {
   it("maps a null uploader_name (anonymous upload) to null", () => {
     expect(mapPhoto({ ...raw, uploader_name: null }).uploaderName).toBeNull();
   });
+
+  it("parses edited_at into a Date, and leaves a never-edited photo null", () => {
+    expect(mapPhoto({ ...raw, edited_at: "2026-06-04T12:00:00+00:00" }).editedAt?.toISOString()).toBe(
+      "2026-06-04T12:00:00.000Z",
+    );
+    expect(mapPhoto(raw).editedAt).toBeNull();
+  });
+
+  // edit_token_hash is a bearer secret. It must never ride along on a mapped row,
+  // because mapped rows feed DTOs and the admin page.
+  it("never carries the capability-token hash, even when the column is present", () => {
+    const p = mapPhoto({ ...raw, edit_token_hash: "deadbeef" });
+    expect(Object.values(p)).not.toContain("deadbeef");
+    expect("editTokenHash" in p).toBe(false);
+  });
 });
 
 describe("mapGuestbook", () => {
@@ -110,6 +125,17 @@ describe("mapGuestbook", () => {
     expect(g).toMatchObject({ id: "g1", eventId: "e1", name: "Lou", message: "happy birthday!", status: "hidden" });
     expect(g.createdAt).toBeInstanceOf(Date);
     expect(g.createdAt.toISOString()).toBe("2026-06-03T11:00:00.000Z");
+  });
+
+  it("parses edited_at and leaves a never-edited wish null", () => {
+    expect(mapGuestbook({ ...raw, edited_at: "2026-06-05T08:00:00+00:00" }).editedAt).toBeInstanceOf(Date);
+    expect(mapGuestbook(raw).editedAt).toBeNull();
+  });
+
+  it("never carries the capability-token hash", () => {
+    const g = mapGuestbook({ ...raw, edit_token_hash: "deadbeef" });
+    expect(Object.values(g)).not.toContain("deadbeef");
+    expect("editTokenHash" in g).toBe(false);
   });
 });
 

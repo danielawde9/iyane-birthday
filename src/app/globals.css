@@ -1,51 +1,77 @@
 @import "tailwindcss";
 
 /*
- * "The Grand Jubilee" — a vintage editorial / letterpress design system.
- * Parchment #FFF8F0 · Big Top Red #AF101A · Aged Gold #FBC02D · Midnight ink #221B03.
- * Arimo (display, woodblock-heavy) · Libre Caslon Text (body) · Space Mono (labels).
+ * "The Greatest Little Show on Earth" — a hand-painted watercolor design system.
+ * Parchment #F7EEDD · Madder Red #A3322E · Marigold #D5A76A · Dusty Azure #596C90
+ * · Sepia ink #3A2B20. Bevan (display) · Lora (body) · Special Elite (labels) ·
+ * Yellowtail (script).
  *
  * Rules of this system:
- *  - No drop shadows. Depth = 2px offset "ghost border" in ink or gold.
- *  - No rounded corners. Sharp 0px throughout.
- *  - No pure white. All surfaces sit on parchment.
- *  - Star glyphs ★ as bullets, dividers, corner accents.
+ *  - No hard offsets. Depth is a soft pigment bloom, never a cast shadow.
+ *  - No true geometry. Corners are asymmetric multi-value radii; edges look cut
+ *    by hand, not by a compass.
+ *  - No pure white and no black. Cream ground, sepia ink, everywhere.
+ *  - Painted marks replace glyphs. Bunting divides sections; ★ does not.
+ *  - Art ships as REAL ALPHA (webp), never white-backed + mix-blend-mode. See
+ *    public/art/CREDITS.md for why that matters.
+ *
+ * Theming: this file drives three years' identities off one set of variables.
+ * `--c-*` are colors (injected per-theme from src/themes), `--v-*` are the
+ * *visual decisions* that differ between years (radii, border weights, whether
+ * a motif shows at all). Every [data-theme] block below MUST declare the FULL
+ * --v-* set, because archive years nest a .theme-canvas inside a differently
+ * themed <html> and rely on that block to reset every decision, not just color.
+ * There is a unit test enforcing this — see src/themes/variant-vars.test.ts.
  */
 :root {
-  --c-bg: #fff8f0; /* parchment */
-  --c-surface: #fff8f0; /* same — vintage paper, never white */
-  --c-paper-deep: #fcedc5; /* deeper paper / panels */
-  --c-primary: #af101a; /* Big Top Red */
-  --c-primary-deep: #930010; /* deeper red */
-  --c-projector-deep: #410003; /* deep brick — slideshow backdrop */
-  --c-accent: #fbc02d; /* Aged Gold */
-  --c-accent-bright: #ffdfa0; /* light gold */
-  --c-gold-deep: #795900; /* deep gold */
-  --c-ink: #221b03; /* midnight brown-ink */
-  --c-ink-soft: #5b403d; /* secondary ink */
-  --c-on-dark: #fff8f0; /* parchment on red */
-  --c-on-surface: #221b03; /* body on parchment */
-  --c-muted: #8f6f6c; /* outline */
-  --c-joy: #af101a; /* red live-pulse */
+  --c-bg: #f7eedd; /* tea-stained parchment */
+  --c-surface: #fbf5e9; /* lighter paper patch */
+  --c-paper-deep: #eddfc4; /* deeper tea wash — panels, tile backing */
+  --c-primary: #a3322e; /* madder red, sampled from the invitation film */
+  --c-primary-deep: #82241f; /* shadow side of the red wash */
+  --c-projector-deep: #2a1d14; /* deep umber — slideshow backdrop */
+  --c-accent: #d5a76a; /* yellow-ochre. A FILL — fails AA as text on cream. */
+  --c-accent-bright: #f2ddb4; /* pale ochre — the highlight tone ON red */
+  --c-gold-deep: #8f5c1c; /* burnt ochre — small text on cream (4.91:1) */
+  --c-ink: #3a2b20; /* sepia-brown ink — no black in this system */
+  --c-ink-soft: #6e594a; /* diluted ink */
+  --c-on-dark: #fbf3e4; /* cream on red */
+  --c-on-surface: #3a2b20; /* body ink */
+  --c-muted: #7a6752; /* dry-brush grey-brown */
+  --c-joy: #596c90; /* dusty azure — the film's third hue */
 
   /* Derived rules */
   --c-rule: color-mix(in srgb, var(--c-ink) 22%, transparent);
   --c-gold-rule: color-mix(in srgb, var(--c-accent) 75%, transparent);
   --c-gold-rule-faint: color-mix(in srgb, var(--c-accent) 38%, transparent);
 
-  /* Font stacks. Legacy --font-serif / --font-serif-sc / --font-cursive aliases
-   * are kept so older CSS and brand SVGs that reference them keep working. */
-  --font-arimo-stack: var(--font-arimo), "Arial Black", "Helvetica Neue", Helvetica, system-ui, sans-serif;
-  --font-caslon-stack: var(--font-caslon), "Libre Caslon Text", Caslon, Georgia, "Times New Roman", serif;
-  --font-mono-stack: var(--font-spacemono), "Courier New", "Andale Mono", monospace;
-
-  --font-display: var(--font-arimo-stack);
-  --font-body: var(--font-caslon-stack);
-  --font-mono: var(--font-mono-stack);
-  --font-script: var(--font-caslon-stack);
-  --font-serif: var(--font-caslon-stack);
-  --font-serif-sc: var(--font-mono-stack);
-  --font-cursive: var(--font-caslon-stack);
+  /* Font stacks.
+   *
+   * Each reads `--th-font-*` first — that is what themeToCssVars() injects onto
+   * <html> at request time — and falls back to the watercolor defaults. The
+   * indirection exists because the `@theme inline` block below compiles
+   * Tailwind's font utilities with the RESOLVED value, not a var() reference,
+   * so a utility like `.font-display` would otherwise be frozen at build time
+   * and could never follow the active theme. Do not collapse these back into
+   * `--font-display` — that reintroduces the bug.
+   *
+   * These four are ALSO re-declared inside every [data-theme] block, and that
+   * duplication is required, not sloppiness: a custom property is substituted at
+   * computed-value time on the element that DECLARES it. Declared only here, the
+   * stacks would resolve against :root's --th-font-* and inherit that result
+   * down — so an archive year's nested .theme-canvas would silently render the
+   * root year's typeface. Declaring them per theme block makes each themed
+   * element resolve its own.
+   *
+   * Component rules below read `--font-*-stack` DIRECTLY for the same reason.
+   * A `:root`-level alias such as `--font-display: var(--font-display-stack)`
+   * would reintroduce the bug, because the alias resolves on :root too. There
+   * used to be four of those (plus legacy --font-serif / -sc / -cursive); they
+   * had no remaining consumers and were removed rather than left as traps. */
+  --font-display-stack: var(--th-font-display, var(--font-bevan), Rockwell, Georgia, serif);
+  --font-body-stack: var(--th-font-body, var(--font-lora), Lora, Georgia, "Times New Roman", serif);
+  --font-mono-stack: var(--th-font-mono, var(--font-elite), "Special Elite", "Courier New", monospace);
+  --font-script-stack: var(--th-font-script, var(--font-yellowtail), "Brush Script MT", cursive);
 }
 
 @theme inline {
@@ -65,31 +91,30 @@
   --color-muted: var(--c-muted);
   --color-joy: var(--c-joy);
 
-  --font-display: var(--font-arimo-stack);
-  --font-body: var(--font-caslon-stack);
+  --font-display: var(--font-display-stack);
+  --font-body: var(--font-body-stack);
   --font-sc: var(--font-mono-stack);
   --font-mono: var(--font-mono-stack);
-  --font-script: var(--font-caslon-stack);
+  --font-script: var(--font-script-stack);
 }
 
 html {
   scroll-behavior: smooth;
+  /* Deliberate: without a background on <html>, body's background propagates to
+   * the canvas and body paints as if transparent — which makes anything that
+   * composites against its backdrop behave differently at the root than inside
+   * an archive year's .theme-canvas div. Painting html stops the propagation. */
+  background-color: var(--c-bg);
 }
 
 body {
   position: relative;
   background-color: var(--c-bg);
   color: var(--c-on-surface);
-  font-family: var(--font-body);
+  font-family: var(--font-body-stack);
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Very subtle paper grain — barely perceptible flecks on parchment. */
-  background-image:
-    radial-gradient(rgba(80, 50, 20, 0.025) 1px, transparent 1px),
-    radial-gradient(rgba(80, 50, 20, 0.02) 1px, transparent 1px);
-  background-size: 3px 3px, 7px 7px;
-  background-position: 0 0, 1px 2px;
 }
 
 ::selection {
@@ -98,8 +123,8 @@ body {
 }
 
 /* ============================================================
- * Animations relied on by the (untouched) home slider and the
- * shared PhotoStage / PhotoControls — DO NOT remove.
+ * Animations relied on by the home slider and the shared
+ * PhotoStage / PhotoControls — DO NOT remove.
  * ============================================================ */
 .photo-kb-bg {
   will-change: transform;
@@ -134,16 +159,34 @@ body {
   to { opacity: 1; transform: none; }
 }
 
+/* Balloons drifting on the watercolor hero. Two named tracks so a row of
+ * balloons doesn't bob in lockstep; `--drift-delay` staggers them further. */
+.art-drift {
+  animation: artDrift 9s ease-in-out infinite alternate;
+  animation-delay: var(--drift-delay, 0s);
+  will-change: transform;
+}
+.art-drift-slow {
+  animation: artDriftSlow 14s ease-in-out infinite alternate;
+  animation-delay: var(--drift-delay, 0s);
+  will-change: transform;
+}
+@keyframes artDrift {
+  from { transform: translate3d(0, 0, 0) rotate(-1.5deg); }
+  to { transform: translate3d(10px, -18px, 0) rotate(1.5deg); }
+}
+@keyframes artDriftSlow {
+  from { transform: translate3d(0, 0, 0) rotate(1deg); }
+  to { transform: translate3d(-14px, -26px, 0) rotate(-1deg); }
+}
+
 /* ============ Editorial type ============
  *
- * All three type roles read their font-family from theme CSS variables
- * (--font-display / --font-body / --font-mono / --font-script). The default
- * :root values point at Grand Jubilee's Arimo / Caslon / Space Mono stacks;
- * themes that ship `fonts: {...}` rebind them. So a year wearing Bagel Fat One
- * for headlines just works without per-component CSS overrides. */
+ * All type roles read their font-family from theme CSS variables, so a year
+ * wearing Bagel Fat One for headlines just works with no per-component CSS. */
 .eyebrow {
-  font-family: var(--font-mono);
-  font-weight: 700;
+  font-family: var(--font-mono-stack);
+  font-weight: var(--v-label-weight);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-size: 11px;
@@ -153,71 +196,66 @@ body {
 .eyebrow-mute { color: var(--c-ink-soft); }
 
 .script {
-  font-family: var(--font-script);
+  font-family: var(--font-script-stack);
   font-weight: 400;
-  font-style: italic;
-  line-height: 1.05;
+  font-style: var(--v-script-style);
+  line-height: 1.15;
 }
 
 .h-title {
-  font-family: var(--font-display);
-  font-weight: 700;
+  font-family: var(--font-display-stack);
+  font-weight: var(--v-title-weight);
   font-style: normal;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--v-title-tracking);
   line-height: 1.05;
   color: var(--c-ink);
+  text-transform: var(--v-title-transform);
 }
 
 .caps {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-/* Hand-pressed "off-register" lift — a 2px gold ghost behind ink type. */
+/* Was a hard 1px letterpress misregistration; in watercolor it's the faintest
+ * ochre bleed under the ink, or nothing at all. */
 .text-engrave {
-  text-shadow: 1px 1px 0 var(--c-accent);
+  text-shadow: var(--v-title-shadow);
 }
 
 /* Text-only brand mark used by the shared header and footer. */
+/* One word, not a tile plus a word. The `__initial` / `__name` parts that used
+ * to split it (a rotated boxed "I" followed by "YANE") are gone, along with the
+ * --v-mark-* variables that only they read. */
 .iyane-wordmark {
-  gap: 0.38em;
   color: currentColor;
-  font-family: var(--font-display);
-  font-weight: 700;
+  font-family: var(--font-display-stack);
+  font-weight: var(--v-title-weight);
   line-height: 0.92;
   text-transform: uppercase;
-}
-.iyane-wordmark__initial {
-  display: inline-grid;
-  width: 1.18em;
-  height: 1.18em;
-  place-items: center;
-  background: var(--c-accent);
-  border: 2px solid var(--c-on-dark);
-  color: var(--c-ink);
-  letter-spacing: 0;
-  line-height: 1;
-  box-shadow: 3px 3px 0 var(--c-ink);
-  transform: rotate(-3deg);
-}
-.iyane-wordmark__name {
-  display: inline-flex;
-  align-items: center;
-  letter-spacing: 0.16em;
-  text-shadow: 1px 1px 0 var(--c-accent);
+  letter-spacing: 0.14em;
+  /* The tracking above adds space after the final letter too, which throws the
+   * mark off-centre against anything beside it. Pull it back. */
+  margin-right: -0.14em;
+  text-shadow: var(--v-title-shadow);
 }
 
-/* ============ Bunting + rules ============ */
-/* `.rule-gold` is an ink line with a small star punched into the middle. */
+/* ============ Dividers ============ */
+/* `.rule-gold` is the section divider. In watercolor it's a painted bunting
+ * string; in the older themes it stays an ink line with a ★ punched into it. */
 .rule-gold {
   border: 0;
-  height: 14px;
-  background:
-    linear-gradient(to right, var(--c-ink) 0, var(--c-ink) calc(50% - 12px), transparent calc(50% - 12px), transparent calc(50% + 12px), var(--c-ink) calc(50% + 12px), var(--c-ink) 100%) center / 100% 1px no-repeat;
+  height: var(--v-rule-height);
+  background: var(--v-rule-line);
+  background-image: var(--v-rule-image), var(--v-rule-line-image);
+  background-repeat: repeat-x, no-repeat;
+  background-position: center, center;
+  background-size: var(--v-rule-size), 100% 1px;
   position: relative;
   margin: 0;
 }
 .rule-gold::after {
   content: "★";
+  display: var(--v-rule-glyph-display);
   position: absolute;
   left: 50%;
   top: 50%;
@@ -235,142 +273,145 @@ body {
   background: var(--c-rule);
 }
 
-/* ============ Cards (sharp, double-bordered, no shadow) ============ */
-/* Default keepsake card — a parchment panel with a thick ink frame and a
- * 1px ink inner stroke. Depth comes from stacking, not shadow. */
+/* ============ Cards ============ */
+/* A keepsake panel. Watercolor gives it one diluted-ink outline, a hand-cut
+ * corner, a wash across the fill, and a soft bloom; the vintage themes keep
+ * their sharp double border. */
 .deco-card {
-  background: var(--c-paper-deep);
-  border: 4px solid var(--c-ink);
-  box-shadow: inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink);
-  border-radius: 0;
+  background-color: var(--c-paper-deep);
+  background-image: var(--v-card-bg-image);
+  border: var(--v-card-border) solid var(--v-card-border-color);
+  border-radius: var(--v-card-radius);
+  box-shadow: var(--v-card-inset-stroke), var(--v-card-shadow);
 }
 
-/* Ghost-border focus — 2px offset misregistered print look. */
-.ghost-ink {
-  box-shadow: 4px 4px 0 var(--c-ink);
-}
-.ghost-gold {
-  box-shadow: 4px 4px 0 var(--c-accent);
-}
-
-/* Ticket-stub variant: a panel with semi-circle notches cut out of the sides
- * (vintage raffle ticket). Side bg matches the page bg so the notches "punch
- * through" cleanly on the parchment background. */
+/* Ticket-stub variant: in the vintage themes, semi-circle notches punched out
+ * of the sides. Watercolor keeps the shape but drops the notches. */
 .ticket-stub {
   position: relative;
-  background: var(--c-paper-deep);
-  border: 4px solid var(--c-ink);
-  border-radius: 0;
+  background-color: var(--c-paper-deep);
+  background-image: var(--v-card-bg-image);
+  border: var(--v-card-border) solid var(--v-card-border-color);
+  border-radius: var(--v-card-radius);
+  box-shadow: var(--v-card-shadow);
   padding: 14px 22px;
 }
 .ticket-stub::before,
 .ticket-stub::after {
   content: "";
+  display: var(--v-stub-notch-display);
   position: absolute;
   top: 50%;
   width: 18px;
   height: 18px;
   background: var(--c-bg);
-  border: 4px solid var(--c-ink);
+  border: var(--v-card-border) solid var(--c-ink);
   border-radius: 50%;
   transform: translateY(-50%);
 }
 .ticket-stub::before { left: -11px; }
 .ticket-stub::after { right: -11px; }
 
-/* ============ Ticket buttons ============ */
-/* Buttons cut as raffle tickets — semi-circle notches on the vertical
- * centers. Implemented via radial-gradient mask so the notch removes pixels
- * cleanly without needing a wrapper. */
+/* ============ Buttons ============ */
+/* Vintage themes cut these as raffle tickets via a radial-gradient notch mask.
+ * Watercolor drops the mask entirely and gets its character from an asymmetric
+ * radius plus a radial edge-darkening wash — which is what actually makes a
+ * shape read as painted rather than filled. */
 .btn-ticket {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-family: var(--font-display-stack);
+  font-weight: var(--v-title-weight);
+  letter-spacing: var(--v-btn-letter-spacing);
   text-transform: uppercase;
-  padding: 14px 32px;
+  padding: var(--v-btn-padding);
   font-size: 13px;
-  background: var(--c-accent);
+  background-color: var(--c-accent);
+  background-image: var(--v-btn-wash);
   color: var(--c-ink);
-  border: 3px solid var(--c-ink);
-  border-radius: 0;
+  border: var(--v-btn-border-width) solid var(--v-btn-border-color);
+  border-radius: var(--v-radius-pill);
   position: relative;
   cursor: pointer;
-  transition: transform 120ms ease;
-  /* mask creates the semi-circle notches */
-  -webkit-mask:
-    radial-gradient(circle 8px at 0 50%, transparent 98%, #000 100%),
-    radial-gradient(circle 8px at 100% 50%, transparent 98%, #000 100%),
-    linear-gradient(#000, #000);
-  -webkit-mask-composite: source-in, source-in;
-          mask:
-    radial-gradient(circle 8px at 0 50%, transparent 98%, #000 100%),
-    radial-gradient(circle 8px at 100% 50%, transparent 98%, #000 100%),
-    linear-gradient(#000, #000);
-          mask-composite: intersect;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+  box-shadow: var(--v-btn-shadow);
+  -webkit-mask: var(--v-btn-mask);
+          mask: var(--v-btn-mask);
+  -webkit-mask-composite: var(--v-btn-mask-composite);
+          mask-composite: var(--v-btn-mask-composite);
 }
-.btn-ticket:hover { transform: translateY(-1px); }
+.btn-ticket:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--v-btn-shadow-hover);
+}
 .btn-ticket:active { transform: translateY(0); }
 .btn-ticket-red {
-  background: var(--c-primary);
+  background-color: var(--c-primary);
+  background-image: var(--v-btn-wash-red);
   color: var(--c-on-dark);
-  border-color: var(--c-ink);
+  border-color: var(--v-btn-border-color);
 }
 .btn-ticket-blue {
-  background: var(--c-ink);
+  background-color: var(--c-ink);
+  background-image: none;
   color: var(--c-on-dark);
 }
 
 /* ============ Ledger-line inputs ============ */
 .field-input {
   width: 100%;
-  background: transparent;
-  border: 0;
-  border-bottom: 2px solid var(--c-ink);
-  border-radius: 0;
-  font-family: var(--font-body);
+  background: var(--v-input-bg);
+  border: var(--v-input-border);
+  border-bottom: var(--v-input-border-bottom);
+  border-radius: var(--v-radius-pill);
+  font-family: var(--font-body-stack);
   font-style: normal;
   font-weight: 400;
   font-size: 18px;
   color: var(--c-ink);
-  padding: 8px 0 10px;
+  padding: var(--v-input-padding);
   outline: none;
-  transition: border-color 180ms ease;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 .field-input::placeholder {
   color: var(--c-muted);
   font-style: italic;
 }
-.field-input:focus { border-bottom-color: var(--c-primary); }
+.field-input:focus {
+  border-bottom: var(--v-input-focus-border-bottom);
+  box-shadow: var(--v-input-focus-shadow);
+}
 .field-textarea {
   width: 100%;
   resize: vertical;
   min-height: 96px;
   line-height: 1.5;
-  font-family: var(--font-body);
+  font-family: var(--font-body-stack);
   font-weight: 400;
   font-size: 16px;
   color: var(--c-ink);
-  background: transparent;
-  border: 0;
-  border-bottom: 2px solid var(--c-ink);
-  border-radius: 0;
+  background: var(--v-input-bg);
+  border: var(--v-input-border);
+  border-bottom: var(--v-input-border-bottom);
+  border-radius: var(--v-radius-md);
   padding: 10px 0;
   outline: none;
-  transition: border-color 180ms ease;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 .field-textarea::placeholder { color: var(--c-muted); font-style: italic; }
-.field-textarea:focus { border-bottom-color: var(--c-primary); }
+.field-textarea:focus {
+  border-bottom: var(--v-input-focus-border-bottom);
+  box-shadow: var(--v-input-focus-shadow);
+}
 .field-label {
   display: block;
-  font-family: var(--font-mono);
+  font-family: var(--font-mono-stack);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--v-label-weight);
   color: var(--c-ink);
   margin-bottom: 8px;
 }
@@ -380,8 +421,8 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--c-primary);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-primary) 70%, transparent);
+  background: var(--v-pulse-bg);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--v-pulse-bg) 70%, transparent);
   animation: iy-pulse 1.6s ease-out infinite;
 }
 @keyframes iy-pulse {
@@ -390,24 +431,25 @@ body {
   100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-primary) 0%, transparent); }
 }
 
-/* ============ Gold-medal avatars ============ */
-/* Contributor photos: perfect circle, 4px Aged Gold ring, small stars at
- * 12 / 3 / 6 / 9 o'clock. Pure CSS — no SVG needed. */
+/* ============ Contributor avatars ============ */
+/* Vintage: a hard gold ring, an ink halo, and stars at 12 and 6 o'clock.
+ * Watercolor: one soft ring, an off-round shape, and a pooled pigment wash. */
 .iy-avatar {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: var(--v-avatar-radius);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono);
+  font-family: var(--font-mono-stack);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--v-label-weight);
   letter-spacing: 0.04em;
   color: var(--c-on-dark);
-  background: var(--c-primary);
-  border: 3px solid var(--c-accent);
-  box-shadow: 0 0 0 2px var(--c-ink);
+  background-color: var(--c-primary);
+  background-image: var(--v-avatar-bg-image);
+  border: var(--v-avatar-border);
+  box-shadow: var(--v-avatar-ring);
   margin-left: -8px;
   text-transform: uppercase;
   position: relative;
@@ -416,28 +458,31 @@ body {
 .iy-avatar::before,
 .iy-avatar::after {
   content: "";
+  display: var(--v-avatar-corner-stars);
   position: absolute;
   width: 8px;
   height: 8px;
   background: var(--c-accent);
-  /* 5-point star clip */
   clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }
 .iy-avatar::before { top: -10px; left: 50%; transform: translateX(-50%); }
 .iy-avatar::after { bottom: -10px; left: 50%; transform: translateX(-50%); }
 .iy-avatar-more {
-  background: var(--c-accent);
+  background-color: var(--c-accent);
+  background-image: none;
   color: var(--c-ink);
 }
 
 /* ============ Photo tiles ============ */
-/* Gold-framed paper-cut tiles with four corner star punches in the ink color. */
+/* Watercolor mats each photo on cream paper rather than framing it in gold. */
 .iy-tile {
   position: relative;
   overflow: visible;
-  background: var(--c-paper-deep);
-  border: 6px solid var(--c-accent);
-  border-radius: 0;
+  background: var(--v-tile-bg);
+  padding: var(--v-tile-pad);
+  border: var(--v-tile-border) solid var(--v-tile-border-color);
+  border-radius: var(--v-radius-md);
+  box-shadow: var(--v-tile-shadow);
 }
 /* The image window inside a tile — clips the photo's scale-on-hover. */
 .iy-shot {
@@ -445,6 +490,7 @@ body {
   position: relative;
   width: 100%;
   overflow: hidden;
+  border-radius: var(--v-shot-radius);
 }
 .iy-tile img {
   width: 100%;
@@ -456,16 +502,16 @@ body {
 .iy-tile:hover .iy-shot img {
   transform: scale(1.03);
 }
-/* Caption plate riveted under the photo, divided by a gold rule. */
+/* Caption plate under the photo. */
 .iy-cap {
-  border-top: var(--v-tile-border, 2px) solid var(--c-accent);
-  background: var(--c-paper-deep);
+  border-top: var(--v-cap-rule);
+  background: transparent;
   padding: 9px 12px 10px;
   text-align: center;
 }
 .iy-cap .iy-cap-name {
-  font-family: var(--font-mono);
-  font-weight: 700;
+  font-family: var(--font-mono-stack);
+  font-weight: var(--v-label-weight);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 11px;
@@ -476,7 +522,7 @@ body {
 }
 .iy-cap .iy-cap-note {
   margin-top: 3px;
-  font-family: var(--font-body);
+  font-family: var(--font-body-stack);
   font-style: italic;
   font-size: 0.9rem;
   line-height: 1.35;
@@ -494,9 +540,13 @@ body {
 @keyframes iy-spin {
   to { transform: rotate(360deg); }
 }
+
+/* Corner stars. Off in watercolor via --v-corner-stars; the markup stays put so
+ * no component has to know which theme is active. */
 .iy-tile::before,
 .iy-tile::after {
   content: "";
+  display: var(--v-corner-stars);
   position: absolute;
   width: 12px;
   height: 12px;
@@ -506,13 +556,12 @@ body {
 }
 .iy-tile::before { top: -2px; left: -2px; }
 .iy-tile::after { top: -2px; right: -2px; }
-/* Bottom corner stars are injected as real <span> elements (since pseudo-elements
- * are limited to two per element). They render via these rules — content: "" is
- * not needed on real elements; the span is a sized box with a clip-path. */
+/* Bottom corners are real <span>s (an element gets only two pseudo-elements). */
 .iy-tile > .iy-star-bl,
 .iy-tile > .iy-star-br,
 .iy-album button > .iy-star-bl,
 .iy-album button > .iy-star-br {
+  display: var(--v-corner-stars);
   position: absolute;
   width: 12px;
   height: 12px;
@@ -525,11 +574,12 @@ body {
 .iy-album button > .iy-star-bl { bottom: -2px; left: -2px; }
 .iy-album button > .iy-star-br { bottom: -2px; right: -2px; }
 
-/* Also draw the top star corners on masonry album buttons (which don't have
- * .iy-tile, they're library-managed buttons). */
+/* Masonry album buttons are library-managed, so they get the same treatment
+ * from the outside rather than via children. */
 .iy-album button::before,
 .iy-album button::after {
   content: "";
+  display: var(--v-corner-stars);
   position: absolute;
   width: 12px;
   height: 12px;
@@ -541,7 +591,8 @@ body {
 .iy-album button::before { top: -2px; left: -2px; }
 .iy-album button::after { top: -2px; right: -2px; }
 
-/* Red + gold initials badge in the bottom-right corner. */
+/* Initials badge in the bottom-right corner of a tile. `accent-bright` rather
+ * than `accent` because ochre-on-madder is only 3.13:1. */
 .iy-badge {
   position: absolute;
   bottom: 8px;
@@ -551,23 +602,23 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono);
+  font-family: var(--font-mono-stack);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--v-label-weight);
   letter-spacing: 0.04em;
-  color: var(--c-accent);
+  color: var(--c-accent-bright);
   background: var(--c-primary);
-  border: 2px solid var(--c-accent);
+  border: 2px solid var(--c-accent-bright);
   border-radius: 50%;
   text-transform: uppercase;
   z-index: 3;
 }
 .iy-attr {
-  font-family: var(--font-mono);
+  font-family: var(--font-mono-stack);
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--v-label-weight);
   color: var(--c-ink);
   margin-top: 10px;
   text-align: center;
@@ -578,18 +629,18 @@ body {
 .iy-tile.is-fresh::before,
 .iy-tile.is-fresh::after { background: var(--c-primary); }
 
-/* The masonry album: light gold backing, with the tiles themselves bringing
- * their own gold frames + corner stars. */
 .iy-album {
-  background: var(--c-bg);
+  background: var(--v-album-bg);
   padding: 0;
 }
 .iy-album button {
   position: relative;
   overflow: hidden;
   cursor: zoom-in;
-  background: var(--c-paper-deep);
-  border: 6px solid var(--c-accent);
+  background: var(--v-tile-bg);
+  border: var(--v-tile-border) solid var(--v-tile-border-color);
+  border-radius: var(--v-radius-md);
+  box-shadow: var(--v-tile-shadow);
 }
 .iy-album img {
   display: block;
@@ -600,57 +651,36 @@ body {
   transform: scale(1.03);
 }
 
-/* ============ Drop-zone (ledger frame) ============ */
+/* ============ Drop-zone ============ */
 .iy-drop-frame {
-  border: 4px solid var(--c-ink);
-  box-shadow: inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink);
-  border-radius: 0;
+  border: var(--v-card-border) solid var(--v-card-border-color);
+  border-radius: var(--v-card-radius);
+  box-shadow: var(--v-card-inset-stroke), var(--v-card-shadow);
   margin: 0;
   padding: 56px 28px;
   position: relative;
-  background: var(--c-paper-deep);
+  background-color: var(--c-paper-deep);
+  background-image: var(--v-card-bg-image);
 }
 
-/* ============ Scalloped tent-flap edges ============ */
-/* `.scallop-bottom` / `.scallop-top` produce a wavy semi-circle edge on the
- * indicated side using a radial-gradient mask. Apply to a colored bar (the
- * scallops "punch through" to the page bg). */
-.scallop-bottom {
-  -webkit-mask:
-    radial-gradient(circle 14px at 14px 100%, transparent 98%, #000 100%) 0 0 / 28px 100%,
-    linear-gradient(#000, #000) 0 0 / 100% calc(100% - 18px) no-repeat;
-          mask:
-    radial-gradient(circle 14px at 14px 100%, transparent 98%, #000 100%) 0 0 / 28px 100%,
-    linear-gradient(#000, #000) 0 0 / 100% calc(100% - 18px) no-repeat;
-  -webkit-mask-composite: source-over;
-          mask-composite: add;
-}
-.scallop-top {
-  -webkit-mask:
-    radial-gradient(circle 14px at 14px 0, transparent 98%, #000 100%) 0 0 / 28px 100%,
-    linear-gradient(#000, #000) 0 18px / 100% calc(100% - 18px) no-repeat;
-          mask:
-    radial-gradient(circle 14px at 14px 0, transparent 98%, #000 100%) 0 0 / 28px 100%,
-    linear-gradient(#000, #000) 0 18px / 100% calc(100% - 18px) no-repeat;
-  -webkit-mask-composite: source-over;
-          mask-composite: add;
-}
-
-/* "Admit One" rotated stamp — applied to a small badge inline. */
+/* ============ "Admit One" stamp ============ */
+/* Watercolor makes the fill translucent so the paper texture shows through it,
+ * which is most of what sells it as a real stamp. */
 .admit-stamp {
   display: inline-block;
-  background: var(--c-ink);
-  color: var(--c-accent);
-  font-family: var(--font-mono);
-  font-weight: 700;
+  background: var(--v-stamp-bg);
+  color: var(--v-stamp-fg);
+  font-family: var(--font-mono-stack);
+  font-weight: var(--v-label-weight);
   text-transform: uppercase;
   letter-spacing: 0.3em;
   font-size: 10px;
   padding: 4px 12px;
-  transform: rotate(-5deg);
+  border-radius: var(--v-stamp-radius);
+  transform: rotate(var(--v-stamp-rotate));
 }
 
-/* Underline-on-active for nav, applied as a 2px gold rule. */
+/* Underline-on-active for nav. */
 .nav-active {
   position: relative;
 }
@@ -659,151 +689,323 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -6px;
-  height: 2px;
-  background: var(--c-accent);
+  bottom: var(--v-nav-active-rule-bottom);
+  height: var(--v-nav-active-rule-height);
+  border-radius: var(--v-nav-active-rule-radius);
+  background: var(--c-accent-bright);
+}
+
+/* ============ Painted art helpers ============ */
+/* Every asset in public/art is a real alpha WebP, so it needs no blend mode and
+ * can sit over parchment, photographs, or the red band alike. `.art` just makes
+ * them behave predictably in layouts. */
+/* Deliberately NO `height: auto` here. An <img> already defaults to auto height
+ * when only its width is constrained, and declaring it explicitly made `.art`
+ * beat Tailwind's `h-full` (equal specificity, later in the cascade) — which
+ * silently broke every layout that sizes a painted layer by height and relies on
+ * object-fit to letterbox it. */
+.art {
+  display: block;
+  max-width: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.art-soft {
+  filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--c-ink) 22%, transparent));
 }
 
 /* ============================================================================
  * Per-theme variant variables
  *
- * Visual decisions that change between themes (corner radius, border weights,
- * whether to show corner stars, button mask, etc.) live as CSS custom
- * properties. Each [data-theme="X"] selector below sets the FULL set of
- * variant variables. The rules under "Variant-driven components" lower down
- * read these vars — so a nested wrapper that sets data-theme="big-top" inside
- * an html with data-theme="tiny-astronaut" cleanly resets every visual
- * decision, not just colors.
+ * Each [data-theme="X"] block sets the FULL set. That is not redundancy — an
+ * archive year nests <div class="theme-canvas" data-theme="..."> inside an
+ * <html> running a different theme, and only a complete block resets every
+ * visual decision rather than leaking a few through from :root.
  *
- * Adding a new year's theme = pick a slug, set its palette + copy in a theme
- * module, and add a [data-theme="<slug>"] block here choosing the variant
- * variables. The default :root values are the Grand Jubilee/vintage choices.
+ * Adding a year = a theme module for the palette/copy + one block here.
  * =========================================================================== */
 
-/* Defaults = Grand Jubilee / vintage editorial. */
+/* Defaults = the watercolor circus. */
 :root {
-  --v-radius-sm: 0px;
-  --v-radius-md: 0px;
-  --v-radius-pill: 0px;
-  --v-tile-border: 6px;
-  --v-card-border: 4px;
-  --v-card-inset-stroke: inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink);
-  --v-card-shadow: none;
-  --v-header-radius: 0px;
-  --v-header-shadow: none;
+  --v-radius-sm: 5px 3px 6px 4px / 4px 6px 3px 5px;
+  --v-radius-md: 7px 4px 8px 5px / 5px 8px 4px 7px;
+  --v-radius-pill: 16px 22px 14px 20px / 20px 14px 22px 16px;
+  --v-card-radius: 22px 10px 26px 12px / 12px 24px 10px 22px;
+  --v-shot-radius: 4px 2px 5px 3px / 3px 5px 2px 4px;
+  --v-tile-border: 0px;
+  --v-tile-border-color: transparent;
+  --v-tile-bg: var(--c-surface);
+  --v-tile-pad: 10px;
+  --v-tile-shadow: 0 10px 24px -16px color-mix(in srgb, var(--c-ink) 60%, transparent);
+  --v-cap-rule: 1px solid color-mix(in srgb, var(--c-ink) 14%, transparent);
+  --v-card-border: 2px;
+  --v-card-border-color: color-mix(in srgb, var(--c-ink) 40%, transparent);
+  --v-card-inset-stroke: 0 0 #0000;
+  --v-card-shadow: 0 12px 26px -18px color-mix(in srgb, var(--c-ink) 60%, transparent);
+  --v-card-bg-image: linear-gradient(
+    178deg,
+    color-mix(in srgb, var(--c-surface) 72%, transparent) 0%,
+    transparent 42%,
+    color-mix(in srgb, var(--c-paper-deep) 60%, transparent) 100%
+  );
+  --v-header-radius: 0 0 6px 8px / 0 0 8px 6px;
+  --v-header-shadow: 0 10px 20px -16px color-mix(in srgb, var(--c-ink) 55%, transparent);
   --v-header-border-bottom: 0;
-  --v-header-scallops-display: block;
-  --v-header-scallop-fill: var(--c-accent);
-  --v-header-scallop-stroke: var(--c-ink);
-  --v-nav-active-rule-height: 2px;
-  --v-nav-active-rule-bottom: -6px;
-  --v-nav-active-rule-radius: 0px;
-  --v-btn-mask:
-    radial-gradient(circle 8px at 0 50%, transparent 98%, #000 100%),
-    radial-gradient(circle 8px at 100% 50%, transparent 98%, #000 100%),
-    linear-gradient(#000, #000);
-  --v-btn-mask-composite: intersect;
-  --v-btn-border-width: 3px;
-  --v-btn-shadow: none;
-  --v-btn-shadow-hover: none;
-  --v-btn-padding: 14px 32px;
-  --v-btn-letter-spacing: 0.12em;
-  --v-input-bg: transparent;
+  --v-header-bg-color: transparent;
+  --v-header-scrim: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--c-primary) 32%, transparent) 0%,
+    color-mix(in srgb, var(--c-primary) 88%, transparent) 46%,
+    color-mix(in srgb, var(--c-primary) 92%, transparent) 100%
+  );
+  --v-header-canopy-image: url("/art/canopy-band.webp");
+  --v-header-valance-image: url("/art/canopy-valance.webp");
+  --v-header-tile-w: 1400px;
+  --v-header-valance-h: 44px;
+  --v-header-bg-image: linear-gradient(var(--c-primary), var(--c-primary));
+  --v-header-bg-size: 100% 100%;
+  --v-nav-active-rule-height: 4px;
+  --v-nav-active-rule-bottom: -7px;
+  --v-nav-active-rule-radius: 4px 2px 3px 2px;
+  --v-btn-mask: none;
+  --v-btn-mask-composite: source-over;
+  --v-btn-border-width: 2px;
+  --v-btn-border-color: color-mix(in srgb, var(--c-ink) 34%, transparent);
+  --v-btn-shadow: 0 8px 16px -12px color-mix(in srgb, var(--c-ink) 70%, transparent);
+  --v-btn-shadow-hover: 0 12px 20px -12px color-mix(in srgb, var(--c-ink) 70%, transparent);
+  --v-btn-padding: 15px 30px;
+  --v-btn-letter-spacing: 0.09em;
+  --v-btn-wash: radial-gradient(
+    120% 150% at 32% 18%,
+    color-mix(in srgb, var(--c-accent) 42%, var(--c-bg)) 0%,
+    var(--c-accent) 54%,
+    color-mix(in srgb, var(--c-gold-deep) 58%, var(--c-accent)) 100%
+  );
+  --v-btn-wash-red: radial-gradient(
+    120% 150% at 32% 18%,
+    color-mix(in srgb, var(--c-primary) 72%, var(--c-accent-bright)) 0%,
+    var(--c-primary) 56%,
+    var(--c-primary-deep) 100%
+  );
+  --v-input-bg: color-mix(in srgb, var(--c-surface) 70%, transparent);
   --v-input-border: 0;
-  --v-input-border-bottom: 2px solid var(--c-ink);
-  --v-input-padding: 8px 0 10px;
-  --v-input-focus-shadow: none;
+  --v-input-border-bottom: 2px solid color-mix(in srgb, var(--c-ink) 46%, transparent);
+  --v-input-padding: 10px 10px 10px;
+  --v-input-focus-shadow: 0 4px 12px -8px color-mix(in srgb, var(--c-primary) 80%, transparent);
   --v-input-focus-border-bottom: 2px solid var(--c-primary);
-  --v-corner-stars: block;
-  --v-avatar-corner-stars: block;
-  --v-title-weight: 700;
-  --v-title-tracking: -0.01em;
+  --v-corner-stars: none;
+  --v-avatar-corner-stars: none;
+  --v-avatar-radius: 50% 47% 53% 50% / 48% 52% 50% 50%;
+  --v-avatar-border: 0;
+  --v-avatar-ring: 0 0 0 2px color-mix(in srgb, var(--c-ink) 24%, transparent);
+  --v-avatar-bg-image: radial-gradient(
+    120% 120% at 34% 26%,
+    color-mix(in srgb, var(--c-primary) 58%, var(--c-bg)) 0%,
+    var(--c-primary) 62%,
+    var(--c-primary-deep) 100%
+  );
+  --v-title-weight: 400; /* Bevan ships 400 only — 700 would synthesise and smear */
+  --v-title-tracking: 0.005em;
   --v-title-transform: none;
+  --v-title-shadow: none;
+  --v-label-weight: 400; /* Special Elite ships 400 only */
   --v-body-weight: 400;
+  --v-script-style: normal; /* Yellowtail is already a slanted brush script */
+  --v-rule-image: url("/art/bunting.webp");
+  --v-rule-line: transparent;
+  --v-rule-line-image: none;
+  --v-rule-size: auto 100%;
+  --v-rule-height: 68px;
+  --v-rule-glyph-display: none;
+  --v-stub-notch-display: none;
+  --v-stamp-bg: color-mix(in srgb, var(--c-primary) 78%, transparent);
+  --v-stamp-fg: var(--c-bg);
+  --v-stamp-radius: 3px 9px 4px 8px / 8px 4px 9px 3px;
+  --v-stamp-rotate: -4.5deg;
   --v-pulse-bg: var(--c-primary);
-  --v-album-bg: var(--c-bg);
-  --v-paper-grain: radial-gradient(rgba(80, 50, 20, 0.025) 1px, transparent 1px),
-                    radial-gradient(rgba(80, 50, 20, 0.02) 1px, transparent 1px);
-  --v-paper-grain-size: 3px 3px, 7px 7px;
-  --v-paper-grain-position: 0 0, 1px 2px;
+  --v-album-bg: transparent;
+  --v-paper-image: url("/art/parchment.jpg");
+  --v-paper-grain:
+    radial-gradient(rgba(92, 62, 32, 0.03) 1px, transparent 1px),
+    var(--v-paper-image);
+  --v-paper-grain-size: 3px 3px, 880px 880px;
+  --v-paper-grain-position: 0 0, center top;
+  --v-paper-grain-repeat: repeat, repeat;
 }
 
-/* Big Top / Grand Jubilee — same as defaults but explicit so a nested wrapper
- * resets cleanly even when the outer html runs a different theme. */
+/* Big Top / the watercolor circus — same as the defaults, but stated in full so
+ * a nested wrapper resets cleanly even when the outer html runs another theme. */
 [data-theme="big-top"],
 [data-theme="mr-onederful"] {
-  --v-radius-sm: 0px;
-  --v-radius-md: 0px;
-  --v-radius-pill: 0px;
-  --v-tile-border: 6px;
-  --v-card-border: 4px;
-  --v-card-inset-stroke: inset 0 0 0 1px var(--c-bg), inset 0 0 0 2px var(--c-ink);
-  --v-card-shadow: none;
-  --v-header-radius: 0px;
-  --v-header-shadow: none;
+  /* Re-declared in every theme block on purpose — see the note in :root. A
+   * custom property resolves where it is DECLARED, so a `--font-*-stack` living
+   * only on :root would bake in the root theme's fonts and a nested
+   * .theme-canvas could never override them. Declaring them here makes each
+   * themed element resolve its own. */
+  --font-display-stack: var(--th-font-display, var(--font-bevan), Rockwell, Georgia, serif);
+  --font-body-stack: var(--th-font-body, var(--font-lora), Lora, Georgia, "Times New Roman", serif);
+  --font-mono-stack: var(--th-font-mono, var(--font-elite), "Special Elite", "Courier New", monospace);
+  --font-script-stack: var(--th-font-script, var(--font-yellowtail), "Brush Script MT", cursive);
+  --v-radius-sm: 5px 3px 6px 4px / 4px 6px 3px 5px;
+  --v-radius-md: 7px 4px 8px 5px / 5px 8px 4px 7px;
+  --v-radius-pill: 16px 22px 14px 20px / 20px 14px 22px 16px;
+  --v-card-radius: 22px 10px 26px 12px / 12px 24px 10px 22px;
+  --v-shot-radius: 4px 2px 5px 3px / 3px 5px 2px 4px;
+  --v-tile-border: 0px;
+  --v-tile-border-color: transparent;
+  --v-tile-bg: var(--c-surface);
+  --v-tile-pad: 10px;
+  --v-tile-shadow: 0 10px 24px -16px color-mix(in srgb, var(--c-ink) 60%, transparent);
+  --v-cap-rule: 1px solid color-mix(in srgb, var(--c-ink) 14%, transparent);
+  --v-card-border: 2px;
+  --v-card-border-color: color-mix(in srgb, var(--c-ink) 40%, transparent);
+  --v-card-inset-stroke: 0 0 #0000;
+  --v-card-shadow: 0 12px 26px -18px color-mix(in srgb, var(--c-ink) 60%, transparent);
+  --v-card-bg-image: linear-gradient(
+    178deg,
+    color-mix(in srgb, var(--c-surface) 72%, transparent) 0%,
+    transparent 42%,
+    color-mix(in srgb, var(--c-paper-deep) 60%, transparent) 100%
+  );
+  --v-header-radius: 0 0 6px 8px / 0 0 8px 6px;
+  --v-header-shadow: 0 10px 20px -16px color-mix(in srgb, var(--c-ink) 55%, transparent);
   --v-header-border-bottom: 0;
-  --v-header-scallops-display: block;
-  --v-header-scallop-fill: var(--c-accent);
-  --v-header-scallop-stroke: var(--c-ink);
-  --v-nav-active-rule-height: 2px;
-  --v-nav-active-rule-bottom: -6px;
-  --v-nav-active-rule-radius: 0px;
-  --v-btn-mask:
-    radial-gradient(circle 8px at 0 50%, transparent 98%, #000 100%),
-    radial-gradient(circle 8px at 100% 50%, transparent 98%, #000 100%),
-    linear-gradient(#000, #000);
-  --v-btn-mask-composite: intersect;
-  --v-btn-border-width: 3px;
-  --v-btn-shadow: none;
-  --v-btn-shadow-hover: none;
-  --v-btn-padding: 14px 32px;
-  --v-btn-letter-spacing: 0.12em;
-  --v-input-bg: transparent;
+  --v-header-bg-color: transparent;
+  --v-header-scrim: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--c-primary) 32%, transparent) 0%,
+    color-mix(in srgb, var(--c-primary) 88%, transparent) 46%,
+    color-mix(in srgb, var(--c-primary) 92%, transparent) 100%
+  );
+  --v-header-canopy-image: url("/art/canopy-band.webp");
+  --v-header-valance-image: url("/art/canopy-valance.webp");
+  --v-header-tile-w: 1400px;
+  --v-header-valance-h: 44px;
+  --v-header-bg-image: linear-gradient(var(--c-primary), var(--c-primary));
+  --v-header-bg-size: 100% 100%;
+  --v-nav-active-rule-height: 4px;
+  --v-nav-active-rule-bottom: -7px;
+  --v-nav-active-rule-radius: 4px 2px 3px 2px;
+  --v-btn-mask: none;
+  --v-btn-mask-composite: source-over;
+  --v-btn-border-width: 2px;
+  --v-btn-border-color: color-mix(in srgb, var(--c-ink) 34%, transparent);
+  --v-btn-shadow: 0 8px 16px -12px color-mix(in srgb, var(--c-ink) 70%, transparent);
+  --v-btn-shadow-hover: 0 12px 20px -12px color-mix(in srgb, var(--c-ink) 70%, transparent);
+  --v-btn-padding: 15px 30px;
+  --v-btn-letter-spacing: 0.09em;
+  --v-btn-wash: radial-gradient(
+    120% 150% at 32% 18%,
+    color-mix(in srgb, var(--c-accent) 42%, var(--c-bg)) 0%,
+    var(--c-accent) 54%,
+    color-mix(in srgb, var(--c-gold-deep) 58%, var(--c-accent)) 100%
+  );
+  --v-btn-wash-red: radial-gradient(
+    120% 150% at 32% 18%,
+    color-mix(in srgb, var(--c-primary) 72%, var(--c-accent-bright)) 0%,
+    var(--c-primary) 56%,
+    var(--c-primary-deep) 100%
+  );
+  --v-input-bg: color-mix(in srgb, var(--c-surface) 70%, transparent);
   --v-input-border: 0;
-  --v-input-border-bottom: 2px solid var(--c-ink);
-  --v-input-padding: 8px 0 10px;
-  --v-input-focus-shadow: none;
+  --v-input-border-bottom: 2px solid color-mix(in srgb, var(--c-ink) 46%, transparent);
+  --v-input-padding: 10px 10px 10px;
+  --v-input-focus-shadow: 0 4px 12px -8px color-mix(in srgb, var(--c-primary) 80%, transparent);
   --v-input-focus-border-bottom: 2px solid var(--c-primary);
-  --v-corner-stars: block;
-  --v-avatar-corner-stars: block;
-  --v-title-weight: 700;
-  --v-title-tracking: -0.01em;
+  --v-corner-stars: none;
+  --v-avatar-corner-stars: none;
+  --v-avatar-radius: 50% 47% 53% 50% / 48% 52% 50% 50%;
+  --v-avatar-border: 0;
+  --v-avatar-ring: 0 0 0 2px color-mix(in srgb, var(--c-ink) 24%, transparent);
+  --v-avatar-bg-image: radial-gradient(
+    120% 120% at 34% 26%,
+    color-mix(in srgb, var(--c-primary) 58%, var(--c-bg)) 0%,
+    var(--c-primary) 62%,
+    var(--c-primary-deep) 100%
+  );
+  --v-title-weight: 400;
+  --v-title-tracking: 0.005em;
   --v-title-transform: none;
+  --v-title-shadow: none;
+  --v-label-weight: 400;
   --v-body-weight: 400;
+  --v-script-style: normal;
+  --v-rule-image: url("/art/bunting.webp");
+  --v-rule-line: transparent;
+  --v-rule-line-image: none;
+  --v-rule-size: auto 100%;
+  --v-rule-height: 68px;
+  --v-rule-glyph-display: none;
+  --v-stub-notch-display: none;
+  --v-stamp-bg: color-mix(in srgb, var(--c-primary) 78%, transparent);
+  --v-stamp-fg: var(--c-bg);
+  --v-stamp-radius: 3px 9px 4px 8px / 8px 4px 9px 3px;
+  --v-stamp-rotate: -4.5deg;
   --v-pulse-bg: var(--c-primary);
-  --v-album-bg: var(--c-bg);
-  --v-paper-grain: radial-gradient(rgba(80, 50, 20, 0.025) 1px, transparent 1px),
-                    radial-gradient(rgba(80, 50, 20, 0.02) 1px, transparent 1px);
-  --v-paper-grain-size: 3px 3px, 7px 7px;
-  --v-paper-grain-position: 0 0, 1px 2px;
+  --v-album-bg: transparent;
+  --v-paper-image: url("/art/parchment.jpg");
+  --v-paper-grain:
+    radial-gradient(rgba(92, 62, 32, 0.03) 1px, transparent 1px),
+    var(--v-paper-image);
+  --v-paper-grain-size: 3px 3px, 880px 880px;
+  --v-paper-grain-position: 0 0, center top;
+  --v-paper-grain-repeat: repeat, repeat;
 }
 
-/* Tiny Astronaut — playful space mission. */
+/* Tiny Astronaut — playful space mission. Unchanged from before the watercolor
+ * rewrite; the new variables here all carry values that reproduce exactly what
+ * this theme rendered previously. */
 [data-theme="tiny-astronaut"],
 [data-theme="sweet-sophomore"] {
+  /* Re-declared in every theme block on purpose — see the note in :root. A
+   * custom property resolves where it is DECLARED, so a `--font-*-stack` living
+   * only on :root would bake in the root theme's fonts and a nested
+   * .theme-canvas could never override them. Declaring them here makes each
+   * themed element resolve its own. */
+  --font-display-stack: var(--th-font-display, var(--font-bevan), Rockwell, Georgia, serif);
+  --font-body-stack: var(--th-font-body, var(--font-lora), Lora, Georgia, "Times New Roman", serif);
+  --font-mono-stack: var(--th-font-mono, var(--font-elite), "Special Elite", "Courier New", monospace);
+  --font-script-stack: var(--th-font-script, var(--font-yellowtail), "Brush Script MT", cursive);
   --v-radius-sm: 12px;
   --v-radius-md: 14px;
   --v-radius-pill: 9999px;
+  --v-card-radius: 14px;
+  --v-shot-radius: 0px;
   --v-tile-border: 4px;
+  --v-tile-border-color: var(--c-accent);
+  --v-tile-bg: var(--c-paper-deep);
+  --v-tile-pad: 0px;
+  --v-tile-shadow: none;
+  --v-cap-rule: 2px solid var(--c-accent);
   --v-card-border: 2px;
-  --v-card-inset-stroke: none;
+  --v-card-border-color: var(--c-ink);
+  --v-card-inset-stroke: 0 0 #0000;
   --v-card-shadow: 0 5px 0 color-mix(in srgb, var(--c-primary) 70%, transparent);
+  --v-card-bg-image: none;
   --v-header-radius: 0 0 28px 28px;
   --v-header-shadow: 0 5px 0 color-mix(in srgb, var(--c-accent) 85%, transparent);
   --v-header-border-bottom: 3px solid var(--c-accent);
-  --v-header-scallops-display: none;
-  --v-header-scallop-fill: var(--c-accent);
-  --v-header-scallop-stroke: transparent;
+  --v-header-bg-color: var(--c-primary);
+  --v-header-scrim: none;
+  --v-header-canopy-image: none;
+  --v-header-valance-image: none;
+  --v-header-tile-w: auto;
+  --v-header-valance-h: 16px;
+  --v-header-bg-image: none;
+  --v-header-bg-size: auto;
   --v-nav-active-rule-height: 5px;
   --v-nav-active-rule-bottom: -9px;
   --v-nav-active-rule-radius: 9999px;
   --v-btn-mask: none;
   --v-btn-mask-composite: source-over;
   --v-btn-border-width: 0;
+  --v-btn-border-color: transparent;
   --v-btn-shadow: 0 4px 0 var(--c-accent);
   --v-btn-shadow-hover: 0 6px 0 var(--c-accent);
   --v-btn-padding: 14px 28px;
   --v-btn-letter-spacing: 0.06em;
+  --v-btn-wash: none;
+  --v-btn-wash-red: none;
   --v-input-bg: var(--c-surface);
   --v-input-border: 2px solid var(--c-primary);
   --v-input-border-bottom: 2px solid var(--c-primary);
@@ -812,18 +1014,46 @@ body {
   --v-input-focus-border-bottom: 2px solid var(--c-primary-deep);
   --v-corner-stars: none;
   --v-avatar-corner-stars: none;
+  --v-avatar-radius: 50%;
+  --v-avatar-border: 3px solid var(--c-accent);
+  --v-avatar-ring: 0 0 0 2px var(--c-ink);
+  --v-avatar-bg-image: none;
   --v-title-weight: 400; /* Bagel Fat One only ships weight 400 */
   --v-title-tracking: 0;
   --v-title-transform: none;
+  --v-title-shadow: none;
+  --v-label-weight: 700;
   --v-body-weight: 500;
+  --v-script-style: italic;
+  --v-rule-image: none;
+  --v-rule-line: transparent;
+  --v-rule-line-image: linear-gradient(
+    to right,
+    var(--c-ink) 0,
+    var(--c-ink) calc(50% - 12px),
+    transparent calc(50% - 12px),
+    transparent calc(50% + 12px),
+    var(--c-ink) calc(50% + 12px),
+    var(--c-ink) 100%
+  );
+  --v-rule-size: auto, 100% 1px;
+  --v-rule-height: 14px;
+  --v-rule-glyph-display: block;
+  --v-stub-notch-display: block;
+  --v-stamp-bg: var(--c-ink);
+  --v-stamp-fg: var(--c-accent);
+  --v-stamp-radius: 0px;
+  --v-stamp-rotate: -5deg;
   --v-pulse-bg: var(--c-joy);
   --v-album-bg: transparent;
+  --v-paper-image: none;
   --v-paper-grain:
     radial-gradient(circle at 18px 18px, color-mix(in srgb, var(--c-accent) 36%, transparent) 0 2px, transparent 3px),
     radial-gradient(circle at 74px 46px, color-mix(in srgb, var(--c-joy) 30%, transparent) 0 1.5px, transparent 2.5px),
     linear-gradient(135deg, color-mix(in srgb, var(--c-primary) 7%, transparent), transparent 48%);
   --v-paper-grain-size: 96px 96px, 128px 128px, auto;
   --v-paper-grain-position: 0 0, 12px 8px, 0 0;
+  --v-paper-grain-repeat: repeat, repeat, no-repeat;
 }
 
 /* ----- Variant-driven components — read the --v-* properties so they re-skin
@@ -833,6 +1063,7 @@ body {
   background-image: var(--v-paper-grain);
   background-size: var(--v-paper-grain-size);
   background-position: var(--v-paper-grain-position);
+  background-repeat: var(--v-paper-grain-repeat);
   font-weight: var(--v-body-weight);
 }
 
@@ -841,115 +1072,112 @@ body {
   background-image: var(--v-paper-grain);
   background-size: var(--v-paper-grain-size);
   background-position: var(--v-paper-grain-position);
+  background-repeat: var(--v-paper-grain-repeat);
   color: var(--c-on-surface);
-  font-family: var(--font-body);
+  font-family: var(--font-body-stack);
   font-weight: var(--v-body-weight);
 }
 
+/* The marquee band.
+ *
+ * Three background layers, in paint order: a red scrim on top, the canopy
+ * artwork under it, and a flat "safety" fill at the bottom.
+ *
+ * The scrim is what makes the nav legible. The canopy's cream stripes measure
+ * ~1.05:1 against the cream nav text — invisible — so the band is tinted back
+ * toward the brand red. It is a GRADIENT rather than a flat wash so the stripes
+ * still read clearly along the top edge, above the text, and only thicken to
+ * ~88% where the labels actually sit (4.7:1, AA). Lowering that number will
+ * break the header's contrast; check it before touching it.
+ *
+ * The safety fill beneath matters too: The safety layer matters — the painted stripes are
+ * translucent watercolor, so without an opaque colour behind them the cream nav
+ * text would sit on parchment and become unreadable if the image is slow or
+ * fails. It is a background *image* (a solid-colour gradient) rather than
+ * `background-color` so `--v-header-bg-size` can stop it short of the valance,
+ * where the gaps between scallops must stay transparent. */
 .site-marquee {
   border-radius: var(--v-header-radius);
   border-bottom: var(--v-header-border-bottom);
   box-shadow: var(--v-header-shadow);
+  background-color: var(--v-header-bg-color);
+  background-image: var(--v-header-scrim), var(--v-header-canopy-image), var(--v-header-bg-image);
+  background-repeat: no-repeat, repeat-x, no-repeat;
+  background-size: 100% 100%, var(--v-header-tile-w) 100%, var(--v-header-bg-size);
+  background-position: left top, left top, left top;
 }
 
-.site-scallops {
-  display: var(--v-header-scallops-display);
+/* The strip hanging off the band. Sized by the SAME tile width as the canopy
+ * above it, so the scallops stay phase-locked to the stripes at every viewport
+ * width — both crops came from one image and are tiled on one period. */
+.site-valance {
+  height: var(--v-header-valance-h);
+  background-image: var(--v-header-valance-image);
+  background-repeat: repeat-x;
+  background-size: var(--v-header-tile-w) 100%;
+  background-position: left top;
+}
+.site-valance.is-bottom {
+  bottom: calc(var(--v-header-valance-h) * -1);
+}
+.site-valance.is-top {
+  top: calc(var(--v-header-valance-h) * -1);
+  transform: scaleY(-1);
 }
 
-.site-scallops path {
-  fill: var(--v-header-scallop-fill);
-  stroke: var(--v-header-scallop-stroke);
+
+/* ============ Motion + display-mode accommodations ============ */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .photo-kb-bg,
+  .photo-fade,
+  .gallery-album img,
+  .art-drift,
+  .art-drift-slow,
+  .pulse,
+  .iy-spin {
+    animation: none !important;
+  }
+  .iy-tile img,
+  .iy-album img,
+  .btn-ticket {
+    transition: none !important;
+  }
+  .iy-tile:hover .iy-shot img,
+  .iy-album button:hover img {
+    transform: none;
+  }
 }
 
-.nav-active::after {
-  bottom: var(--v-nav-active-rule-bottom);
-  height: var(--v-nav-active-rule-height);
-  border-radius: var(--v-nav-active-rule-radius);
+/* The painted art is decorative; in forced-colors mode it is dropped by the UA
+ * anyway, so make sure nothing depends on it for meaning. */
+@media (forced-colors: active) {
+  .art,
+  .art-soft {
+    filter: none;
+  }
 }
 
-.h-title {
-  font-weight: var(--v-title-weight);
-  letter-spacing: var(--v-title-tracking);
-  text-transform: var(--v-title-transform);
-}
-
-.btn-ticket {
-  border-radius: var(--v-radius-pill);
-  border-width: var(--v-btn-border-width);
-  padding: var(--v-btn-padding);
-  letter-spacing: var(--v-btn-letter-spacing);
-  -webkit-mask: var(--v-btn-mask);
-          mask: var(--v-btn-mask);
-  -webkit-mask-composite: var(--v-btn-mask-composite);
-          mask-composite: var(--v-btn-mask-composite);
-  box-shadow: var(--v-btn-shadow);
-}
-.btn-ticket:hover {
-  box-shadow: var(--v-btn-shadow-hover);
-}
-
-.field-input {
-  background: var(--v-input-bg);
-  border: var(--v-input-border);
-  border-bottom: var(--v-input-border-bottom);
-  border-radius: var(--v-radius-pill);
-  padding: var(--v-input-padding);
-}
-.field-input:focus {
-  box-shadow: var(--v-input-focus-shadow);
-  border-bottom: var(--v-input-focus-border-bottom);
-}
-.field-textarea {
-  background: var(--v-input-bg);
-  border: var(--v-input-border);
-  border-bottom: var(--v-input-border-bottom);
-  border-radius: var(--v-radius-md);
-}
-.field-textarea:focus {
-  box-shadow: var(--v-input-focus-shadow);
-  border-bottom: var(--v-input-focus-border-bottom);
-}
-
-.deco-card {
-  border-radius: var(--v-radius-md);
-  border-width: var(--v-card-border);
-  box-shadow: var(--v-card-inset-stroke), var(--v-card-shadow);
-}
-.ticket-stub {
-  border-radius: var(--v-radius-md);
-  border-width: var(--v-card-border);
-}
-
-.iy-tile,
-.iy-album button {
-  border-radius: var(--v-radius-md);
-  border-width: var(--v-tile-border);
-}
-.iy-tile::before,
-.iy-tile::after,
-.iy-album button::before,
-.iy-album button::after,
-.iy-tile > .iy-star-bl,
-.iy-tile > .iy-star-br,
-.iy-album button > .iy-star-bl,
-.iy-album button > .iy-star-br {
-  display: var(--v-corner-stars);
-}
-.iy-avatar::before,
-.iy-avatar::after {
-  display: var(--v-avatar-corner-stars);
-}
-
-.iy-album {
-  background: var(--v-album-bg);
-}
-
-.pulse {
-  background: var(--v-pulse-bg);
-}
-.iy-drop-frame {
-  border-radius: var(--v-radius-md);
-}
-.iy-drop-frame::before {
-  border-radius: var(--v-radius-md);
+/* The poster is a physical artifact people actually print. Translucent
+ * color-mix fills and drop-shadow filters degrade unpredictably in print
+ * pipelines, so flatten them and force the browser to keep the color. */
+@media print {
+  html,
+  body,
+  .theme-canvas {
+    background-image: none;
+    background-color: #fff;
+  }
+  .art,
+  .art-soft {
+    filter: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .deco-card,
+  .ticket-stub,
+  .iy-tile,
+  .btn-ticket {
+    box-shadow: none;
+  }
 }

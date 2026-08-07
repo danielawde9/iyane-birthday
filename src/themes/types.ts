@@ -40,7 +40,7 @@ export type DecorationKind = "bowtie" | "bigtop";
  * A theme's typography. Each value is a CSS font-family stack string, usually
  * referencing the next/font variables loaded at the root layout (e.g.
  * `var(--font-arimo), Arial Black, sans-serif`). If omitted, the theme inherits
- * the default Grand Jubilee fonts (Arimo / Libre Caslon Text / Space Mono).
+ * the Year 1 watercolor fonts (Bevan / Lora / Special Elite / Yellowtail).
  */
 export interface ThemeFonts {
   display: string;
@@ -54,7 +54,7 @@ export interface Theme {
   name: string;
   emoji: string;
   palette: ThemePalette;
-  /** Optional font overrides. Falls back to Grand Jubilee fonts if omitted. */
+  /** Optional font overrides. Falls back to the Year 1 watercolor fonts. */
   fonts?: ThemeFonts;
   copy: ThemeCopy;
   decoration: DecorationKind;

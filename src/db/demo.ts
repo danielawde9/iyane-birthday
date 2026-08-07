@@ -13,11 +13,16 @@ export const DEMO_EVENT: EventRow = {
   year: 1,
   themeSlug: "big-top",
   title: "Iyane — Year One",
-  eventDate: new Date("2026-07-15T16:00:00"),
-  venue: "Gharfi, Shouf",
-  address: "Lebanon",
+  // Matches the invitation film: "SATURDAY 15 AUGUST AT 4:00 PM / AT TETA AND
+  // JEDDO'S HOUSE, GHARIFEH". The previous values here (15 July, "Gharfi, Shouf")
+  // predate the invitation and disagreed with what guests were actually sent.
+  // NOTE: seed.ts skips year-1 rows that already exist, so changing this only
+  // affects a fresh database — an existing row needs the admin page.
+  eventDate: new Date("2026-08-15T16:00:00"),
+  venue: "Teta & Jeddo's House",
+  address: "Gharifeh, Lebanon",
   mapUrl: "https://maps.app.goo.gl/sfwNaXMNvN6kfsrV8",
-  dressCode: "Dapper attire encouraged",
+  dressCode: "Sunday best · stripes encouraged",
   heroCopy: "A page written by the room — every photograph here was placed by a guest.",
   isActive: true,
   createdAt: new Date(),
@@ -102,6 +107,7 @@ function buildDemoPhotos({
     caption: m.caption,
     featured: i === featuredIndex,
     status: "visible",
+    editedAt: null,
     createdAt: new Date(Date.now() - i * 3_600_000),
   }));
 }
@@ -134,6 +140,7 @@ export const DEMO_GUESTBOOK: GuestbookRow[] = [
     name: "Tante Layla",
     message: "One whole year, and a room full of people who love you. Keep this page forever.",
     status: "visible",
+    editedAt: null,
     createdAt: new Date(Date.now() - 10_800_000),
   },
   {
@@ -142,6 +149,7 @@ export const DEMO_GUESTBOOK: GuestbookRow[] = [
     name: "Auntie Rose",
     message: "Mabrouk ya Iyane. May every year be as full of light as this room was tonight.",
     status: "visible",
+    editedAt: null,
     createdAt: new Date(Date.now() - 7_200_000),
   },
   {
@@ -150,6 +158,7 @@ export const DEMO_GUESTBOOK: GuestbookRow[] = [
     name: "Marcus T.",
     message: "Thank you for letting us be part of the very first chapter. It was a beautiful evening.",
     status: "visible",
+    editedAt: null,
     createdAt: new Date(Date.now() - 5_400_000),
   },
   {
@@ -158,6 +167,7 @@ export const DEMO_GUESTBOOK: GuestbookRow[] = [
     name: "Mama Iyane",
     message: "Every face here, every photograph — this is the year we will always come back to.",
     status: "visible",
+    editedAt: null,
     createdAt: new Date(Date.now() - 3_600_000),
   },
 ];

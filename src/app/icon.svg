@@ -1,7 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#0E2240"/>
-  <text x="32" y="48" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="44" font-weight="700" fill="#C9A24B">1</text>
-  <path d="M32 19 18 13v12l14-6Z" fill="#14110E"/>
-  <path d="M32 19 46 13v12l-14-6Z" fill="#14110E"/>
-  <rect x="29" y="15.5" width="6" height="7" rx="2" fill="#14110E"/>
+  <!-- A tiny big top in the site's own palette. Replaces the pre-rebrand
+       navy/gold bow-tie mark, which matched nothing on the site any more. -->
+  <rect width="64" height="64" rx="14" fill="#F7EEDD"/>
+  <path d="M32 15 6 52M32 15l26 37" stroke="#8F5C1C" stroke-width="1" opacity=".4" fill="none"/>
+  <path d="M32 12 8 40h48L32 12Z" fill="#A3322E"/>
+  <path d="M32 12 24 40h8V12Z" fill="#F2DDB4"/>
+  <path d="M32 12v28h8l-8-28Z" fill="#F2DDB4" opacity=".5"/>
+  <path d="M8 40h48v13H8z" fill="#596C90"/>
+  <path d="M20 40h6v13h-6zM38 40h6v13h-6z" fill="#F2DDB4"/>
+  <path d="M8 38h48v2a5 5 0 0 1-8 0 5 5 0 0 1-10 0 5 5 0 0 1-10 0 5 5 0 0 1-10 0 5 5 0 0 1-10 0v-2Z" fill="#A3322E"/>
+  <path d="M32 44c-3.4 0-5.6 2.4-5.6 5.6V53h11.2v-3.4C37.6 46.4 35.4 44 32 44Z" fill="#3A2B20"/>
+  <path d="M32 12V7l7 2.2-7 2.3Z" fill="#D5A76A"/>
 </svg>

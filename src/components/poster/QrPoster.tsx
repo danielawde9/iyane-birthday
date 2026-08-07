@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
+import { qrOptions } from "@/lib/qr";
 
 /**
- * A printable Grand Jubilee playbill with a QR code that opens the upload page.
+ * A printable playbill with a QR code that opens the upload page.
  * Heavy hierarchy in the style of a 1920s big-top playbill: scalloped banners
  * top and bottom, ink frame with corner stars, a "Presenting" eyebrow stack,
  * massive wood-type IYANE headline, a folded ribbon billing the year, an
@@ -14,7 +15,7 @@ export function QrPoster() {
   const [qr, setQr] = useState<string | null>(null);
 
   useEffect(() => {
-    QRCode.toDataURL(`${window.location.origin}/upload`, { margin: 1, width: 560, color: { dark: "#221B03", light: "#FFF8F0" } })
+    QRCode.toDataURL(`${window.location.origin}/upload`, qrOptions(560))
       .then(setQr)
       .catch(() => setQr(null));
   }, []);
@@ -53,7 +54,7 @@ export function QrPoster() {
           style={{ borderBottom: "3px solid var(--c-ink)" }}
         >
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-accent sm:text-sm sm:tracking-[0.32em]">
-            <span className="text-accent">★</span> Step Right Up · The Greatest Little Show <span className="text-accent">★</span>
+            <span className="text-accent-bright">◆</span> Step Right Up · The Greatest Little Show <span className="text-accent-bright">◆</span>
           </p>
         </div>
         {/* yellow scalloped strip dangling off the banner */}
@@ -97,7 +98,7 @@ export function QrPoster() {
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="whitespace-nowrap font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-on-dark sm:text-sm sm:tracking-[0.2em]">
-                The Grand Jubilee · MMXXVI
+                The Greatest Little Show · MMXXVI
               </span>
             </div>
           </div>
@@ -105,7 +106,7 @@ export function QrPoster() {
           {/* Ink rule with star */}
           <div className="my-7 flex w-full max-w-md items-center gap-3 px-4">
             <span className="h-[2px] flex-1 bg-ink" />
-            <span className="text-primary text-base leading-none">★</span>
+            <span className="text-primary text-base leading-none">◆</span>
             <span className="h-[2px] flex-1 bg-ink" />
           </div>
 
@@ -145,7 +146,7 @@ export function QrPoster() {
           style={{ borderTop: "3px solid var(--c-ink)" }}
         >
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-accent sm:text-sm sm:tracking-[0.32em]">
-            <span className="text-accent">★</span> Stars Encouraged · Sunday Best · MMXXVI <span className="text-accent">★</span>
+            <span className="text-accent-bright">◆</span> Stripes Encouraged · Sunday Best · MMXXVI <span className="text-accent-bright">◆</span>
           </p>
         </div>
       </article>

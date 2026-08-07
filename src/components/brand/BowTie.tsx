@@ -1,19 +1,41 @@
 import type { SVGProps } from "react";
 
 /**
- * A row of 5-point stars used as a section-title underline ornament (the
- * legacy "BowTie" export, repurposed as star bunting). currentColor controls
- * the fill so any caller's text-* color tints it.
+ * A small run of triangular pennants, used as a card/section ornament.
+ *
+ * Still exported as `BowTie` for back-compat — it was a bow tie two rebrands
+ * ago, then a row of stars — so call sites don't have to change.
+ *
+ * Drawn rather than reusing `/art/bunting.webp` on purpose: at this size (a
+ * ~40px-tall accent) the painted artwork's brush detail turns to mush, whereas
+ * flat SVG fills stay crisp and cost no extra request. The fills come from theme
+ * variables, so it still re-skins with an archive year.
  */
 export function BowTie(props: SVGProps<SVGSVGElement>) {
+  const flags = [12, 45, 78, 110, 142, 175, 208];
+  const fills = ["var(--c-primary)", "var(--c-joy)", "var(--c-accent)"];
   return (
-    <svg viewBox="0 0 220 28" fill="currentColor" aria-hidden="true" {...props}>
-      {[20, 60, 110, 160, 200].map((cx, i) => {
-        const r = i === 2 ? 11 : 8;
+    <svg viewBox="0 0 220 30" aria-hidden="true" {...props}>
+      {/* The twine, sagging gently across the run. */}
+      <path
+        d="M2 4 Q110 16 218 4"
+        fill="none"
+        stroke="var(--c-gold-deep)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity="0.6"
+      />
+      {flags.map((x, i) => {
+        // Hang each flag off the twine rather than a straight line, by sampling
+        // the same parabola the path describes.
+        const t = x / 220;
+        const y = 4 + 12 * (1 - (2 * t - 1) ** 2);
         return (
           <polygon
-            key={cx}
-            points={`${cx},${14 - r} ${cx + r * 0.3},${14 - r * 0.3} ${cx + r * 0.95},${14 - r * 0.3} ${cx + r * 0.45},${14 + r * 0.1} ${cx + r * 0.6},${14 + r * 0.9} ${cx},${14 + r * 0.45} ${cx - r * 0.6},${14 + r * 0.9} ${cx - r * 0.45},${14 + r * 0.1} ${cx - r * 0.95},${14 - r * 0.3} ${cx - r * 0.3},${14 - r * 0.3}`}
+            key={x}
+            points={`${x - 8},${y} ${x + 8},${y} ${x},${y + 15}`}
+            fill={fills[i % fills.length]}
+            opacity="0.88"
           />
         );
       })}

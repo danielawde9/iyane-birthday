@@ -1,43 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import QRCode from "qrcode";
 import type { PhotoDTO } from "@/lib/photo";
-import { CrestSmall } from "@/components/brand/Crest";
 import { PhotoStage } from "@/components/media/PhotoStage";
-import { PhotoControls } from "@/components/media/PhotoControls";
+import { PhotoControls, PhotoProgress } from "@/components/media/PhotoControls";
 import { useRotation } from "@/lib/useRotation";
 
 const INTERVAL = 6500;
+const REFRESH_MS = 30_000;
 
 /**
- * The home hero: a full-bleed wall of guest photos shown WHOLE (never cropped)
- * over a blurred backdrop, with the "Grand Jubilee" ink + gold corner stamps,
- * an "Admit One" QR ticket, and a Caslon photo credit along the bottom.
+ * The rotating photo wall that opens /gallery: guest photographs shown WHOLE
+ * (never cropped) over a blurred backdrop of themselves, auto-advancing and
+ * quietly refreshing as new ones arrive.
  *
- * It renders INSIDE the shared (site) chrome — the SiteHeader sits above it and
- * the SiteFooter below — so the home page carries the same header, nav, and
- * footer as every other page. It fills the viewport below the header and
- * auto-refreshes as new photos arrive.
+ * It carries almost no furniture on purpose — just the photo credit and the
+ * transport controls. It used to also float an "Admit One" QR, a crest, a
+ * tagline and a guest count over the image; every one of those either repeats
+ * something the page below already says or competes with the photograph, which
+ * is the only thing here worth looking at.
+ *
+ * Renders nothing at all when there are no photos: the wall underneath has its
+ * own empty state, and two "be the first" prompts stacked on one page is one
+ * too many.
  */
-export function LivingGallery({
-  photos: initial,
-  guestCount,
-}: {
-  photos: PhotoDTO[];
-  guestCount: number;
-}) {
+export function LivingGallery({ photos: initial }: { photos: PhotoDTO[] }) {
   const [photos, setPhotos] = useState<PhotoDTO[]>(initial);
-  const [qr, setQr] = useState<string | null>(null);
   const { index, isPlaying, toggle, next, prev } = useRotation(photos.length, { intervalMs: INTERVAL });
-
-  useEffect(() => {
-    const url = `${window.location.origin}/upload`;
-    QRCode.toDataURL(url, { margin: 1, width: 220, color: { dark: "#221B03", light: "#FFF8F0" } })
-      .then(setQr)
-      .catch(() => setQr(null));
-  }, []);
 
   useEffect(() => {
     const id = setInterval(async () => {
@@ -48,102 +37,54 @@ export function LivingGallery({
       } catch {
         /* keep current photos */
       }
-    }, 30000);
+    }, REFRESH_MS);
     return () => clearInterval(id);
   }, []);
 
-  const hasPhotos = photos.length > 0;
-  const current = hasPhotos ? photos[index % photos.length]! : null;
-  const shadow = "drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]";
+  if (photos.length === 0) return null;
+
+  const current = photos[index % photos.length]!;
 
   return (
-    // Full-bleed hero that fills the screen below the shared SiteHeader. The
-    // negative top margin cancels the header's bottom gap so the slideshow butts
-    // flush against the red marquee.
-    <section className="relative -mt-6 w-full overflow-hidden bg-projector-deep text-on-dark min-h-[calc(100svh-78px)] sm:min-h-[calc(100svh-88px)]">
-      {/* Uncropped photo + blurred backdrop */}
-      {hasPhotos ? (
+    // Full-bleed. The negative top margin cancels the header's bottom gap so the
+    // dark ground butts flush against the marquee — but the PHOTO is inset below
+    // it, so the painted valance hangs over empty ground rather than clipping the
+    // top of someone's photograph.
+    //
+    // A three-row column, not a stack of absolutely-positioned overlays: header
+    // clearance, then the photo, then the credit and transport on the dark ground
+    // BELOW it. Nothing covers the picture.
+    <section className="relative -mt-6 flex min-h-[70svh] w-full flex-col overflow-hidden bg-projector-deep text-on-dark sm:min-h-[78svh]">
+      {/* Clearance for the header's painted valance, which hangs ~44px down. */}
+      <div className="h-14 shrink-0 sm:h-16" aria-hidden="true" />
+
+      <div className="relative min-h-0 w-full flex-1">
         <PhotoStage photo={current} />
-      ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,#7a1a1f,#410003_70%)]" />
-      )}
-
-      {/* Soft vignette */}
-      <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
-
-      {/* Controls (centered) */}
-      {photos.length > 1 && (
-        <PhotoControls
-          isPlaying={isPlaying}
-          index={index}
-          intervalMs={INTERVAL}
-          onToggle={toggle}
-          onPrev={prev}
-          onNext={next}
-        />
-      )}
-
-      {/* Floating right-side ADMIT ONE QR — desktop only */}
-      <div className="absolute bottom-20 right-8 z-20 hidden items-end gap-4 lg:flex">
-        <Link href="/upload" className={`text-right ${shadow}`}>
-          <span className="block font-display text-3xl font-bold uppercase tracking-[0.08em] text-accent">
-            Add Your Photos
-          </span>
-          <span className="block font-mono text-xs font-bold uppercase tracking-[0.22em] text-on-dark/85">
-            Scan to upload
-          </span>
-        </Link>
-        {qr && (
-          <Link
-            href="/upload"
-            aria-label="Add your photos"
-            className="ticket-stub relative -rotate-3 transition-transform hover:rotate-0"
-            style={{ padding: "10px", background: "var(--c-bg)" }}
-          >
-            <span className="admit-stamp absolute -left-3 -top-3">Admit One</span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qr} alt="QR code to upload photos" className="h-20 w-20" />
-          </Link>
-        )}
+        {photos.length > 1 && <PhotoProgress index={index} isPlaying={isPlaying} intervalMs={INTERVAL} />}
       </div>
 
-      {/* Floating left-side mark — desktop only */}
-      <div className={`absolute bottom-20 left-8 z-20 hidden items-center gap-3 lg:flex ${shadow}`}>
-        <CrestSmall className="h-12 w-20 text-accent" />
-        <span className="font-body text-lg italic text-on-dark/85">The Grand Jubilee</span>
-      </div>
-
-      {/* Bottom caption: photo credit on the left, guest count on the right.
-          A simple gradient bar — NOT a second footer (the SiteFooter renders below). */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
-        <div className="pointer-events-auto mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 pr-20 pb-5 pt-16 sm:px-8">
-          <p className={`min-w-0 truncate font-body text-sm italic text-on-dark/90 sm:text-base ${shadow}`}>
-            {current?.uploaderName ? (
-              <>Photo by <span className="font-bold not-italic text-accent">{current.uploaderName}</span></>
-            ) : (
-              <>An evening under the big top</>
-            )}
-          </p>
-          {hasPhotos && guestCount > 0 && (
-            <p className={`shrink-0 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-on-dark sm:text-sm sm:tracking-[0.2em] ${shadow}`}>
-              <span className="text-accent">★</span> {guestCount} guest{guestCount === 1 ? "" : "s"}
-            </p>
+      {/* Credit + transport. The three-column grid keeps the buttons optically
+          centred on the page regardless of how long the photographer's name is. */}
+      <div className="z-20 flex shrink-0 flex-col items-center gap-4 px-4 py-5 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:px-8">
+        <p className="min-w-0 truncate font-body text-base italic text-on-dark/90 sm:justify-self-start sm:text-lg">
+          {current.uploaderName ? (
+            <>
+              Photo by <span className="font-bold not-italic text-accent-bright">{current.uploaderName}</span>
+            </>
+          ) : (
+            <>Come one, come all</>
           )}
-        </div>
-      </div>
+        </p>
 
-      {/* Empty state */}
-      {!hasPhotos && (
-        <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center gap-6 px-6 text-center ${shadow}`}>
-          <CrestSmall className="h-20 w-32" />
-          <p className="font-body text-3xl italic text-accent sm:text-4xl">
-            The big top is empty — be the first under the lights
-          </p>
-          <Link href="/upload" className="btn-ticket">
-            Add Your Photos
-          </Link>
-        </div>
-      )}
+        {photos.length > 1 ? (
+          <PhotoControls isPlaying={isPlaying} onToggle={toggle} onPrev={prev} onNext={next} />
+        ) : (
+          <span />
+        )}
+
+        {/* Balances the grid so the controls sit dead centre. */}
+        <span className="hidden sm:block" aria-hidden="true" />
+      </div>
     </section>
   );
 }

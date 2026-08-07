@@ -1,12 +1,12 @@
 import type { SVGProps } from "react";
 
 /**
- * "The Grand Jubilee" mark — a gold medal: a 5-point gold star, an ink-ringed
+ * The keepsake mark — a medal: a 5-point star, an ink-ringed
  * medallion centered on it carrying the monogram, and four small ink stars at
  * 12 / 3 / 6 / 9 o'clock around the rim. Pure SVG, theme-driven.
  */
 export function Crest({
-  title = "Iyane · The Grand Jubilee",
+  title = "Iyane · The Greatest Little Show on Earth",
   mono = "I",
   ...props
 }: SVGProps<SVGSVGElement> & { title?: string; mono?: string }) {

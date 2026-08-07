@@ -43,23 +43,27 @@ export function SiteHeader({ chrome }: { chrome?: SiteChrome }) {
     <header className="sticky top-0 z-40 mb-6">
       <ScallopedHeader scallop="bottom">
         <div className="relative mx-auto flex h-[78px] max-w-6xl items-center justify-between gap-3 px-4 sm:h-[88px] sm:gap-4 sm:px-8">
-          <div className="flex min-w-0 items-baseline gap-3 sm:gap-5">
+          {/* The wordmark and its caption stack. Side by side they competed with
+              the nav for horizontal space and the theme name got truncated
+              mid-word ("The Greatest Little Show on Ear…"); stacked, the line
+              has the full width of the brand block to itself. */}
+          <div className="flex min-w-0 flex-col justify-center gap-0.5">
             <Link
               href={brandHref}
               aria-label="Iyane home"
-              className="shrink-0 text-on-dark transition-colors hover:text-accent"
+              className="shrink-0 leading-none text-on-dark transition-colors hover:text-accent-bright"
             >
-              <TextLogo className="text-[1.55rem] sm:text-4xl" />
+              <TextLogo className="text-[1.4rem] sm:text-3xl" />
             </Link>
-            <span className="hidden truncate font-body text-base italic text-on-dark/85 md:inline">
+            <span className="hidden whitespace-nowrap font-body text-xs italic leading-tight text-on-dark/85 md:inline lg:text-sm">
               {yearLabel}
-              <span className="mx-2 text-accent">·</span>
+              <span className="mx-1.5 text-accent-bright">·</span>
               <Link href="/archive" className="hover:underline">
                 {isArchiveMode ? "All years" : "Past years ▾"}
               </Link>
               {isArchiveMode && (
                 <>
-                  <span className="mx-2 text-accent">·</span>
+                  <span className="mx-1.5 text-accent-bright">·</span>
                   <Link href="/" className="hover:underline">
                     Current year
                   </Link>
@@ -76,8 +80,8 @@ export function SiteHeader({ chrome }: { chrome?: SiteChrome }) {
                   key={it.href}
                   href={it.href}
                   className={cn(
-                    "font-display text-sm font-bold uppercase tracking-[0.08em] text-on-dark transition-colors hover:text-accent",
-                    active && "nav-active text-accent",
+                    "font-display text-sm uppercase tracking-[0.08em] text-on-dark transition-colors hover:text-accent-bright",
+                    active && "nav-active text-accent-bright",
                   )}
                 >
                   {it.label}
@@ -98,7 +102,7 @@ export function SiteHeader({ chrome }: { chrome?: SiteChrome }) {
               aria-expanded={menuOpen}
               aria-controls="site-mobile-menu"
               onClick={() => setMenuOpen((open) => !open)}
-              className="flex h-11 w-11 items-center justify-center border-2 border-on-dark text-on-dark transition hover:border-accent hover:text-accent lg:hidden"
+              className="flex h-11 w-11 items-center justify-center border-2 border-on-dark text-on-dark transition hover:border-accent-bright hover:text-accent-bright lg:hidden"
             >
               <span className="flex flex-col gap-1.5" aria-hidden="true">
                 <span className={cn("block h-0.5 w-5 bg-current transition", menuOpen && "translate-y-2 rotate-45")} />
@@ -122,7 +126,7 @@ export function SiteHeader({ chrome }: { chrome?: SiteChrome }) {
                     href={it.href}
                     onClick={() => setMenuOpen(false)}
                     className={cn(
-                      "px-2 py-3 font-display text-sm font-bold uppercase tracking-[0.08em] transition hover:text-primary",
+                      "px-2 py-3 font-display text-sm uppercase tracking-[0.08em] transition hover:text-primary",
                       active && "text-primary",
                     )}
                   >

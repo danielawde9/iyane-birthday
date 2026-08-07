@@ -31,9 +31,9 @@ describe("getArchiveYearThemeShell", () => {
 
     expect(shell?.event.year).toBe(1);
     expect(shell?.theme.slug).toBe("big-top");
-    expect(shell?.cssVars["--c-primary"]).toBe("#AF101A");
+    expect(shell?.cssVars["--c-primary"]).toBe("#A3322E");
     expect(shell?.chrome.yearLabel).toBe("Viewing Year 1");
-    expect(shell?.chrome.themeLabel).toBe("The Grand Jubilee");
+    expect(shell?.chrome.themeLabel).toBe("The Greatest Little Show on Earth");
     expect(shell?.chrome.homeHref).toBe("/archive/1");
   });
 

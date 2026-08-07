@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { StarRule } from "@/components/ui/StarRule";
 import { clearUploaderName, loadUploaderName, saveUploaderName } from "@/lib/uploader-name";
+import { saveEditToken } from "@/lib/edit-tokens";
+import { useOwnedRows } from "@/components/guest/useOwnedRows";
+import { WishControls } from "./WishControls";
 
 export interface Entry {
   id: string;
@@ -14,6 +17,7 @@ export interface Entry {
 
 export function GuestbookWall({ initial }: { initial: Entry[] }) {
   const [entries, setEntries] = useState<Entry[]>(initial);
+  const owned = useOwnedRows("guestbook");
   const [name, setName] = useState("");
   const [remembered, setRemembered] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
@@ -49,7 +53,14 @@ export function GuestbookWall({ initial }: { initial: Entry[] }) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Couldn't post your message.");
-      setEntries((prev) => [data.entry as Entry, ...prev]);
+      const entry = data.entry as Entry;
+      setEntries((prev) => [entry, ...prev]);
+      // The capability token comes back exactly once. Keep it, or this guest
+      // loses the ability to edit the wish they just wrote.
+      if (typeof data.editToken === "string") {
+        saveEditToken(window.localStorage, "guestbook", entry.id, data.editToken);
+        owned.remember(entry.id);
+      }
       if (submittedName) {
         saveUploaderName(window.localStorage, submittedName);
         setName(submittedName);
@@ -138,6 +149,19 @@ export function GuestbookWall({ initial }: { initial: Entry[] }) {
                 </p>
                 <StarRule className="my-4" />
                 <p className="script text-right text-3xl text-gold-deep">{entry.name}</p>
+                {owned.owns(entry.id) && (
+                  <WishControls
+                    entry={entry}
+                    send={owned.send}
+                    onEdited={(updated) =>
+                      setEntries((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
+                    }
+                    onRemoved={(id) => {
+                      owned.forget(id);
+                      setEntries((prev) => prev.filter((e) => e.id !== id));
+                    }}
+                  />
+                )}
               </article>
             ))}
           </div>

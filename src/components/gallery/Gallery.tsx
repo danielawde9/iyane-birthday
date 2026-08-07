@@ -10,6 +10,8 @@ import type { PhotoDTO } from "@/lib/photo";
 import { ButtonLink } from "@/components/ui/Button";
 import { StarRule } from "@/components/ui/StarRule";
 import { cn } from "@/lib/cn";
+import { useOwnedRows } from "@/components/guest/useOwnedRows";
+import { OwnPhotoControls } from "./OwnPhotoControls";
 
 export interface GalleryContributor {
   name: string | null;
@@ -18,7 +20,6 @@ export interface GalleryContributor {
 }
 
 interface GalleryProps {
-  featured: PhotoDTO | null;
   contributors: GalleryContributor[];
   initial: PhotoDTO[];
   nextOffset: number | null;
@@ -71,14 +72,14 @@ function toSlides(photos: PhotoDTO[]) {
 
 type Tab = typeof ALL | "recent" | "by-guest";
 
-export function Gallery({ featured, contributors, initial, nextOffset, totalPhotos, year }: GalleryProps) {
+export function Gallery({ contributors, initial, nextOffset, totalPhotos, year }: GalleryProps) {
   const [photos, setPhotos] = useState<PhotoDTO[]>(initial);
+  const owned = useOwnedRows("photo");
   const [next, setNext] = useState<number | null>(nextOffset);
   const [active, setActive] = useState<string>(ALL);
   const [tab, setTab] = useState<Tab>(ALL);
   const [loading, setLoading] = useState(false);
   const [index, setIndex] = useState(-1);
-  const [featuredOpen, setFeaturedOpen] = useState(false);
 
   const fetchScope = useCallback(
     async (scope: string, offset: number) => {
@@ -120,41 +121,9 @@ export function Gallery({ featured, contributors, initial, nextOffset, totalPhot
   }, [next, loading, active, fetchScope]);
 
   const guestCount = contributors.length;
-  // Don't show the featured photo twice — when its hero is visible (the "all"
-  // scope), drop it from the grid + lightbox below.
-  const gridPhotos = featured && active === ALL ? photos.filter((p) => p.id !== featured.id) : photos;
 
   return (
     <div>
-      {/* Featured moment — a vintage playbill panel */}
-      {featured && active === ALL && (
-        <figure className="mb-10">
-          <p className="eyebrow mb-3 text-center">A Moment From the Room</p>
-          <button
-            onClick={() => setFeaturedOpen(true)}
-            className="group relative block w-full overflow-hidden border-[6px] border-accent bg-paper-deep"
-            style={{ boxShadow: "0 0 0 4px var(--c-ink)" }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={featured.url}
-              alt={featured.caption ?? "Featured moment"}
-              className="max-h-[62vh] w-full object-cover transition-transform duration-700 group-hover:scale-[1.01]"
-            />
-            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent p-6 text-left sm:p-8">
-              {featured.caption && (
-                <p className="h-title text-2xl uppercase text-on-dark sm:text-3xl">{featured.caption}</p>
-              )}
-              {featured.uploaderName && (
-                <p className="mt-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-accent">
-                  — Added by {featured.uploaderName}
-                </p>
-              )}
-            </figcaption>
-          </button>
-        </figure>
-      )}
-
       {/* Stats panel — keepsake card, gold-medal avatars, ADD YOURS ticket button */}
       {totalPhotos > 0 && (
         <section className="deco-card mb-10 flex flex-col items-stretch justify-between gap-5 p-7 sm:flex-row sm:items-center">
@@ -226,7 +195,7 @@ export function Gallery({ featured, contributors, initial, nextOffset, totalPhot
       <StarRule className="mb-10" />
 
       {/* Grid */}
-      {gridPhotos.length === 0 ? (
+      {photos.length === 0 ? (
         <div className="deco-card p-12 text-center">
           <p className="script text-4xl text-ink">The wall is waiting</p>
           <p className="mt-3 font-body text-base text-ink-soft">Be the first to place a photograph from the celebration.</p>
@@ -235,15 +204,22 @@ export function Gallery({ featured, contributors, initial, nextOffset, totalPhot
           </ButtonLink>
         </div>
       ) : (
-        <div className={cn("columns-2 gap-6 transition-opacity md:columns-3 [&>figure]:mb-6", loading && "opacity-60")}>
-          {gridPhotos.map((p, i) => (
+        <div
+          className={cn(
+            // The wall runs edge to edge, so the column count keeps climbing past
+            // the old max-width breakpoints — otherwise a wide monitor just gets
+            // three enormous tiles instead of more of them.
+            "columns-2 gap-6 transition-opacity md:columns-3 xl:columns-4 2xl:columns-5 [&>figure]:mb-6",
+            loading && "opacity-60",
+          )}
+        >
+          {photos.map((p, i) => (
             <figure key={p.id} className="iy-tile break-inside-avoid">
               <button
                 onClick={() => setIndex(i)}
                 className="iy-shot w-full cursor-zoom-in"
                 aria-label={p.caption ?? (p.uploaderName ? `Photo by ${p.uploaderName}` : "View photograph")}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={p.thumbUrl}
                   alt={p.caption ?? (p.uploaderName ? `Photo by ${p.uploaderName}` : "A moment from the day")}
@@ -255,10 +231,26 @@ export function Gallery({ featured, contributors, initial, nextOffset, totalPhot
               <span className="iy-star-br" aria-hidden="true" />
               <figcaption className="iy-cap">
                 <p className="iy-cap-name">
-                  <span className="text-primary">★</span> {p.uploaderName ?? "A guest"}
+                  <span className="text-primary">◆</span> {p.uploaderName ?? "A guest"}
                 </p>
                 {p.caption && <p className="iy-cap-note">“{p.caption}”</p>}
               </figcaption>
+              {owned.owns(p.id) && (
+                <OwnPhotoControls
+                  photo={p}
+                  send={owned.send}
+                  onEdited={(updated) =>
+                    setPhotos((prev) => prev.map((x) => (x.id === updated.id ? updated : x)))
+                  }
+                  onRemoved={(id) => {
+                    owned.forget(id);
+                    setPhotos((prev) => prev.filter((x) => x.id !== id));
+                    // The lightbox indexes into `photos`; closing it avoids
+                    // landing on whatever slid into the removed photo's slot.
+                    setIndex(-1);
+                  }}
+                />
+              )}
             </figure>
           ))}
         </div>
@@ -280,21 +272,11 @@ export function Gallery({ featured, contributors, initial, nextOffset, totalPhot
         open={index >= 0}
         close={() => setIndex(-1)}
         index={Math.max(0, index)}
-        slides={toSlides(gridPhotos)}
+        slides={toSlides(photos)}
         plugins={[Captions, Zoom]}
         captions={{ descriptionTextAlign: "center" }}
         styles={lightboxStyles}
       />
-      {featured && (
-        <Lightbox
-          open={featuredOpen}
-          close={() => setFeaturedOpen(false)}
-          slides={toSlides([featured])}
-          plugins={[Captions, Zoom]}
-          captions={{ descriptionTextAlign: "center" }}
-          styles={lightboxStyles}
-        />
-      )}
     </div>
   );
 }
