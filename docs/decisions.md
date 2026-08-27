@@ -381,3 +381,42 @@ are ~30 lines and can be rewritten on `sanitizeText` without touching anything e
 **Why.** It is a passive full-bleed slideshow that re-polls every 30 seconds and replaces its whole
 array; controls there would fight the rotation, and a removal would visibly reappear until the next
 poll. Not worth the complexity for a surface nobody reads as an inventory.
+
+### D-024 · The site was taken offline for the year by detaching its domains, not by deleting anything
+
+**Decided.** On 2026-08-27 both domains were removed from the Vercel project
+`iyane-birthday` (`prj_lDKLLtE34Y64SUc8chCx7UhEst7C`) via the Vercel API:
+`iyane.danielawde9.com` and `iyane-birthday.vercel.app`. Every URL now returns
+`404 DEPLOYMENT_NOT_FOUND`. Nothing was deleted — not the project, not the
+deployment, not the database, not the storage bucket.
+
+A full verified backup was taken **first**, to
+`~/Backups/iyane-birthday/2026-08-27-1050/` (see `RESTORE.md` in that folder):
+pg_dump in both plain and custom formats, all 138 storage objects (43.5 MB),
+`storage.objects` metadata, `policies.sql`, the production env vars and the live
+commit SHA — 146 files, sha256-checksummed. Both restore paths were executed
+against a real Postgres 17 before the site was touched.
+
+**Why detaching rather than a holding page.** It needs no code change, no deploy
+and no push, so the repo stays exactly as it shipped. `iyane-birthday.vercel.app`
+had to go too: it served the full site publicly. The longer
+`iyane-birthday-danielawde9s-projects.vercel.app` was already behind Vercel SSO,
+so the two removals close every public surface.
+
+**The Supabase project is deliberately left to auto-pause.** With no traffic
+reaching `/api/*`, the free-tier project idles and Supabase pauses it after about
+a week. Data is retained through a pause; the backup is the real safety net.
+
+**Two consequences worth knowing.** The Cloudflare CNAME `iyane` →
+`ce1388d46aa2ee8f.vercel-dns-017.com` is still in place and still proxied — it now
+points at nothing, which is why the 404 is Vercel's rather than Cloudflare's.
+And guests who bookmarked the gallery get a bare Vercel 404 with no explanation;
+if that matters, the fix is the Cloudflare Worker holding page that was considered
+and not taken.
+
+**If the client answers differently:** to bring it back, re-add
+`iyane.danielawde9.com` in the Vercel dashboard (Project → Settings → Domains);
+DNS already resolves, so verification is immediate and no Cloudflare change is
+needed. If Supabase has paused by then, unpause it first and let the restore
+finish before re-adding the domain, so the first visitor doesn't hit a dead
+database.
